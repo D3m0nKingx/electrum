@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2012 thomasv@gitorious
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -27,8 +28,8 @@ from PyQt5.QtGui import *
 import re
 from decimal import Decimal
 
-from electrum import bitcoin
-from electrum.util import bfh
+from electrum_ganja import ganja
+from electrum_ganja.util import bfh
 
 from .qrtextedit import ScanQRTextEdit
 from .completion_text_edit import CompletionTextEdit
@@ -83,20 +84,20 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit):
     def parse_output(self, x):
         try:
             address = self.parse_address(x)
-            return bitcoin.TYPE_ADDRESS, address
+            return ganja.TYPE_ADDRESS, address
         except:
             script = self.parse_script(x)
-            return bitcoin.TYPE_SCRIPT, script
+            return ganja.TYPE_SCRIPT, script
 
     def parse_script(self, x):
-        from electrum.transaction import opcodes, push_script
+        from electrum_ganja.transaction import opcodes, push_script
         script = ''
         for word in x.split():
             if word[0:3] == 'OP_':
                 assert word in opcodes.lookup
                 opcode_int = opcodes.lookup[word]
                 assert opcode_int < 256  # opcode is single-byte
-                script += bitcoin.int_to_hex(opcode_int)
+                script += ganja.int_to_hex(opcode_int)
             else:
                 bfh(word)  # to test it is hex data
                 script += push_script(word)
@@ -112,7 +113,7 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit):
         r = line.strip()
         m = re.match('^'+RE_ALIAS+'$', r)
         address = str(m.group(2) if m else r)
-        assert bitcoin.is_address(address)
+        assert ganja.is_address(address)
         return address
 
     def check_text(self):
@@ -126,7 +127,7 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit):
         self.payto_address = None
         if len(lines) == 1:
             data = lines[0]
-            if data.startswith("bitcoin:"):
+            if data.startswith("ganjacoin:"):
                 self.scan_f(data)
                 return
             try:
@@ -200,7 +201,7 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit):
 
     def qr_input(self):
         data = super(PayToEdit,self).qr_input()
-        if data.startswith("bitcoin:"):
+        if data.startswith("ganjacoin:"):
             self.scan_f(data)
             # TODO: update fee
 
@@ -219,7 +220,7 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit):
         if not (('.' in key) and (not '<' in key) and (not ' ' in key)):
             return
         parts = key.split(sep=',')  # assuming single line
-        if parts and len(parts) > 0 and bitcoin.is_address(parts[0]):
+        if parts and len(parts) > 0 and ganja.is_address(parts[0]):
             return
         try:
             data = self.win.contacts.resolve(key)

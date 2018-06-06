@@ -3,16 +3,16 @@ import curses, datetime, locale
 from decimal import Decimal
 import getpass
 
-import electrum
-from electrum.util import format_satoshis, set_verbosity
-from electrum.bitcoin import is_address, COIN, TYPE_ADDRESS
-from electrum import Wallet, WalletStorage
+import electrum_ganja as electrum
+from electrum_ganja.util import format_satoshis, set_verbosity
+from electrum_ganja.ganja import is_address, COIN, TYPE_ADDRESS
+from electrum_ganja import Wallet, WalletStorage
 
 _ = lambda x:x
 
 
 
-class ElectrumGui:
+class Electrum_GanjaGui:
 
     def __init__(self, config, daemon, plugins):
 
@@ -20,7 +20,7 @@ class ElectrumGui:
         self.network = daemon.network
         storage = WalletStorage(config.get_wallet_path())
         if not storage.file_exists():
-            print("Wallet not found. try 'electrum create'")
+            print("Wallet not found. try 'electrum-ganja create'")
             exit()
         if storage.is_encrypted():
             password = getpass.getpass('Password:', stream=None)
@@ -320,7 +320,7 @@ class ElectrumGui:
 
     def do_send(self):
         if not is_address(self.str_recipient):
-            self.show_message(_('Invalid Bitcoin address'))
+            self.show_message(_('Invalid Ganjacoin address'))
             return
         try:
             amount = int(Decimal(self.str_amount) * COIN)
@@ -333,7 +333,7 @@ class ElectrumGui:
             self.show_message(_('Invalid Fee'))
             return
 
-        if self.wallet.has_password():
+        if self.wallet.use_encryption:
             password = self.password_dialog()
             if not password:
                 return
@@ -392,7 +392,7 @@ class ElectrumGui:
                         self.show_message("Error:" + server + "\nIn doubt, type \"auto-connect\"")
                         return False
             if out.get('server') or out.get('proxy'):
-                proxy = electrum.network.deserialize_proxy(out.get('proxy')) if out.get('proxy') else proxy_config
+                proxy = electrum_ganja.network.deserialize_proxy(out.get('proxy')) if out.get('proxy') else proxy_config
                 self.network.set_parameters(host, port, protocol, proxy, auto_connect)
 
     def settings_dialog(self):

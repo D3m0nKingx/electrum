@@ -1,22 +1,23 @@
 ####-*.patch
+.buildozer/
+.devlocaltmp/
+.tox/
+bin/
+build/
+contrib/pyinstaller/
+dist/
+Electrum-ganja.egg-info/
+Electrum_ganja.egg-info/
+env/
+locale/
+packages
+*_trial_temp
 *.pyc
 *.swp
-build/
-dist/
 *.egg/
-/electrum.py
-contrib/pyinstaller/
-Electrum.egg-info/
-gui/qt/icons_rc.py
-locale/
-.devlocaltmp/
-*_trial_temp
-packages
-env/
-.tox/
-.buildozer/
-bin/
 /app.fil
+/electrum.py
+gui/qt/icons_rc.py
 
 # tox files
 .cache/

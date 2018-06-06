@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2014 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -37,7 +38,7 @@ try:
 except ImportError:
     sys.exit("Error: could not find paymentrequest_pb2.py. Create it with 'protoc --proto_path=lib/ --python_out=lib/ lib/paymentrequest.proto'")
 
-from . import bitcoin
+from . import ganja
 from . import ecc
 from . import util
 from .util import print_error, bh2u, bfh
@@ -46,10 +47,10 @@ from . import transaction
 from . import x509
 from . import rsakey
 
-from .bitcoin import TYPE_ADDRESS
+from .ganja import TYPE_ADDRESS
 
-REQUEST_HEADERS = {'Accept': 'application/bitcoin-paymentrequest', 'User-Agent': 'Electrum'}
-ACK_HEADERS = {'Content-Type':'application/bitcoin-payment','Accept':'application/bitcoin-paymentack','User-Agent':'Electrum'}
+REQUEST_HEADERS = {'Accept': 'application/ganja-paymentrequest', 'User-Agent': 'Electrum-Ganja'}
+ACK_HEADERS = {'Content-Type':'application/ganja-payment','Accept':'application/ganja-paymentack','User-Agent':'Electrum-Ganja'}
 
 ca_path = requests.certs.where()
 ca_list = None
@@ -74,49 +75,32 @@ def get_payment_request(url):
     u = urllib.parse.urlparse(url)
     error = None
     if u.scheme in ['http', 'https']:
-        try:
-            response = requests.request('GET', url, headers=REQUEST_HEADERS)
-            response.raise_for_status()
-            # Guard against `bitcoin:`-URIs with invalid payment request URLs
-            if "Content-Type" not in response.headers \
-            or response.headers["Content-Type"] != "application/bitcoin-paymentrequest":
-                data = None
-                error = "payment URL not pointing to a payment request handling server"
-            else:
-                data = response.content
-            print_error('fetched payment request', url, len(response.content))
-        except requests.exceptions.RequestException:
-            data = None
-            error = "payment URL not pointing to a valid server"
+	response = requests.request('GET', url, headers=REQUEST_HEADERS)
+	data = response.content
+	print_error('fetched payment request', url, len(data))
     elif u.scheme == 'file':
-        try:
-            with open(u.path, 'r', encoding='utf-8') as f:
-                data = f.read()
-        except IOError:
-            data = None
-            error = "payment URL not pointing to a valid file"
+	with open(u.path, 'r') as f:
+		data = f.read()
     else:
         raise Exception("unknown scheme", url)
-    pr = PaymentRequest(data, error)
+    pr = PaymentRequest(data)
     return pr
 
 
 class PaymentRequest:
 
-    def __init__(self, data, error=None):
+    def __init__(self, data):
         self.raw = data
-        self.error = error
         self.parse(data)
         self.requestor = None # known after verify
         self.tx = None
+	self.error = None
 
     def __str__(self):
         return self.raw
 
     def parse(self, r):
-        if self.error:
-            return
-        self.id = bh2u(bitcoin.sha256(r)[0:16])
+        self.id = bh2u(ganja.sha256(r)[0:16])
         try:
             self.data = pb2.PaymentRequest()
             self.data.ParseFromString(r)
@@ -137,34 +121,32 @@ class PaymentRequest:
         #return self.get_outputs() != [(TYPE_ADDRESS, self.get_requestor(), self.get_amount())]
 
     def verify(self, contacts):
-        if self.error:
-            return False
         if not self.raw:
             self.error = "Empty request"
-            return False
+            return
         pr = pb2.PaymentRequest()
         try:
             pr.ParseFromString(self.raw)
         except:
             self.error = "Error: Cannot parse payment request"
-            return False
+            return
         if not pr.signature:
             # the address will be displayed as requestor
             self.requestor = None
             return True
         if pr.pki_type in ["x509+sha256", "x509+sha1"]:
             return self.verify_x509(pr)
-        elif pr.pki_type in ["dnssec+btc", "dnssec+ecdsa"]:
+        elif pr.pki_type in ["dnssec+mrja", "dnssec+ecdsa"]:
             return self.verify_dnssec(pr, contacts)
         else:
             self.error = "ERROR: Unsupported PKI Type for Message Signature"
-            return False
+            return
 
     def verify_x509(self, paymntreq):
         load_ca_list()
         if not ca_list:
             self.error = "Trusted certificate authorities list not found"
-            return False
+            return
         cert = pb2.X509Certificates()
         cert.ParseFromString(paymntreq.pki_data)
         # verify the chain of certificates
@@ -192,7 +174,7 @@ class PaymentRequest:
             verify = pubkey0.hashAndVerify(sigBytes, msgBytes)
         if not verify:
             self.error = "ERROR: Invalid Signature for Payment Request Data"
-            return False
+            return
         ### SIG Verified
         self.error = 'Signed by Trusted CA: ' + ca.get_common_name()
         return True
@@ -204,7 +186,7 @@ class PaymentRequest:
         if info.get('validated') is not True:
             self.error = "Alias verification failed (DNSSEC)"
             return False
-        if pr.pki_type == "dnssec+btc":
+        if pr.pki_type == "dnssec+mrja":
             self.requestor = alias
             address = info.get('address')
             pr.signature = b''
@@ -268,7 +250,7 @@ class PaymentRequest:
         paymnt.transactions.append(bfh(raw_tx))
         ref_out = paymnt.refund_to.add()
         ref_out.script = util.bfh(transaction.Transaction.pay_script(TYPE_ADDRESS, refund_addr))
-        paymnt.memo = "Paid using Electrum"
+        paymnt.memo = "Paid using Electrum-Ganja"
         pm = paymnt.SerializeToString()
         payurl = urllib.parse.urlparse(pay_det.payment_url)
         try:
@@ -319,11 +301,11 @@ def make_unsigned_request(req):
 
 
 def sign_request_with_alias(pr, alias, alias_privkey):
-    pr.pki_type = 'dnssec+btc'
+    pr.pki_type = 'dnssec+mrja'
     pr.pki_data = str(alias)
     message = pr.SerializeToString()
     ec_key = ecc.ECPrivkey(alias_privkey)
-    compressed = bitcoin.is_compressed(alias_privkey)
+    compressed = ganja.is_compressed(alias_privkey)
     pr.signature = ec_key.sign_message(message, compressed)
 
 
@@ -427,7 +409,7 @@ def serialize_request(req):
     requestor = req.get('name')
     if requestor and signature:
         pr.signature = bfh(signature)
-        pr.pki_type = 'dnssec+btc'
+        pr.pki_type = 'dnssec+mrja'
         pr.pki_data = str(requestor)
     return pr
 

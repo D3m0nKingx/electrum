@@ -1,5 +1,6 @@
-# Electrum - Lightweight Bitcoin Client
+# Electrum-Ganja - Lightweight Ganjacoin Client
 # Copyright (c) 2015 Thomas Voegtlin
+# Copyright (c) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -27,7 +28,7 @@ import json
 import traceback
 import sys
 
-from . import bitcoin
+from . import ganja
 from . import dnssec
 from .util import export_meta, import_meta, print_error, to_string
 
@@ -44,7 +45,7 @@ class Contacts(dict):
         # backward compatibility
         for k, v in self.items():
             _type, n = v
-            if _type == 'address' and bitcoin.is_address(n):
+            if _type == 'address' and ganja.is_address(n):
                 self.pop(k)
                 self[n] = ('address', k)
 
@@ -71,7 +72,7 @@ class Contacts(dict):
             self.save()
 
     def resolve(self, k):
-        if bitcoin.is_address(k):
+        if ganja.is_address(k):
             return {
                 'address': k,
                 'type': 'address'
@@ -92,7 +93,7 @@ class Contacts(dict):
                 'type': 'openalias',
                 'validated': validated
             }
-        raise Exception("Invalid Bitcoin address or alias", k)
+        raise Exception("Invalid Ganjacoin address or alias", k)
 
     def resolve_openalias(self, url):
         # support email-style addresses, per the OA standard
@@ -102,7 +103,7 @@ class Contacts(dict):
         except DNSException as e:
             print_error('Error resolving openalias: ', str(e))
             return None
-        prefix = 'btc'
+        prefix = 'mrja'
         for record in records:
             string = to_string(record.strings[0], 'utf8')
             if string.startswith('oa1:' + prefix):
@@ -125,7 +126,7 @@ class Contacts(dict):
         for k, v in list(data.items()):
             if k == 'contacts':
                 return self._validate(v)
-            if not bitcoin.is_address(k):
+            if not ganja.is_address(k):
                 data.pop(k)
             else:
                 _type, _ = v

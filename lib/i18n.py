@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2012 thomasv@gitorious
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -27,7 +28,7 @@ import os
 import gettext
 
 LOCALE_DIR = os.path.join(os.path.dirname(__file__), 'locale')
-language = gettext.translation('electrum', LOCALE_DIR, fallback=True)
+language = gettext.translation('electrum-ganja', LOCALE_DIR, fallback=True)
 
 
 def _(x):
@@ -38,7 +39,7 @@ def _(x):
 def set_language(x):
     global language
     if x:
-        language = gettext.translation('electrum', LOCALE_DIR, fallback=True, languages=[x])
+        language = gettext.translation('electrum-ganja', LOCALE_DIR, fallback=True, languages=[x])
 
 
 languages = {

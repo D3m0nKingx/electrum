@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (QLineEdit, QStyle, QStyleOptionFrame)
 
-from electrum.util import format_satoshis_plain, decimal_point_to_base_unit_name, FEERATE_PRECISION
+from electrum_ganja.util import format_satoshis_plain, decimal_point_to_base_unit_name, FEERATE_PRECISION
 
 
 class MyLineEdit(QLineEdit):
@@ -22,7 +22,7 @@ class AmountEdit(MyLineEdit):
 
     def __init__(self, base_unit, is_int=False, parent=None):
         QLineEdit.__init__(self, parent)
-        # This seems sufficient for hundred-BTC amounts with 8 decimals
+        # This seems sufficient for hundred-MRJA amounts with 8 decimals
         self.setFixedWidth(140)
         self.base_unit = base_unit
         self.textChanged.connect(self.numbify)
@@ -78,7 +78,7 @@ class AmountEdit(MyLineEdit):
         self.setText("%d"%x)
 
 
-class BTCAmountEdit(AmountEdit):
+class MRJAAmountEdit(AmountEdit):
 
     def __init__(self, decimal_point, is_int=False, parent=None):
         AmountEdit.__init__(self, self._base_unit, is_int, parent)
@@ -109,7 +109,7 @@ class BTCAmountEdit(AmountEdit):
             self.setText(format_satoshis_plain(amount, self.decimal_point()))
 
 
-class FeerateEdit(BTCAmountEdit):
+class FeerateEdit(MRJAAmountEdit):
 
     def __init__(self, decimal_point, is_int=False, parent=None):
         super().__init__(decimal_point, is_int, parent)
@@ -119,7 +119,7 @@ class FeerateEdit(BTCAmountEdit):
         return 'sat/byte'
 
     def get_amount(self):
-        sat_per_byte_amount = BTCAmountEdit.get_amount(self)
+        sat_per_byte_amount = MRJAAmountEdit.get_amount(self)
         if sat_per_byte_amount is None:
             return None
         return 1000 * sat_per_byte_amount

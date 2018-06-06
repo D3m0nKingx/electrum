@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2015 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -34,7 +35,7 @@ import threading
 from .util import print_error
 from .i18n import _
 from .util import profiler, PrintError, DaemonThread, UserCancelled, ThreadJob
-from . import bitcoin
+from . import ganja
 
 plugin_loaders = {}
 hook_names = set()
@@ -48,9 +49,9 @@ class Plugins(DaemonThread):
         DaemonThread.__init__(self)
         if is_local:
             find = imp.find_module('plugins')
-            plugins = imp.load_module('electrum_plugins', *find)
+            plugins = imp.load_module('electrum_ganja_plugins', *find)
         else:
-            plugins = __import__('electrum_plugins')
+            plugins = __import__('electrum_ganja_plugins')
         self.pkgpath = os.path.dirname(plugins.__file__)
         self.config = config
         self.hw_wallets = {}
@@ -95,7 +96,7 @@ class Plugins(DaemonThread):
     def load_plugin(self, name):
         if name in self.plugins:
             return self.plugins[name]
-        full_name = 'electrum_plugins.' + name + '.' + self.gui_name
+        full_name = 'electrum_ganja_plugins.' + name + '.' + self.gui_name
         loader = pkgutil.find_loader(full_name)
         if not loader:
             raise RuntimeError("%s implementation for %s plugin not found"
@@ -434,7 +435,7 @@ class DeviceMgr(ThreadJob, PrintError):
     def force_pair_xpub(self, plugin, handler, info, xpub, derivation, devices):
         # The wallet has not been previously paired, so let the user
         # choose an unpaired device and compare its first address.
-        xtype = bitcoin.xpub_type(xpub)
+        xtype = ganja.xpub_type(xpub)
         client = self.client_lookup(info.device.id_)
         if client and client.is_pairable():
             # See comment above for same code
@@ -452,10 +453,10 @@ class DeviceMgr(ThreadJob, PrintError):
         # The user input has wrong PIN or passphrase, or cancelled input,
         # or it is not pairable
         raise DeviceUnpairableError(
-            _('Electrum cannot pair with your {}.\n\n'
-              'Before you request bitcoins to be sent to addresses in this '
+            _('Electrum-Ganja cannot pair with your {}.\n\n'
+              'Before you request Ganjacoins to be sent to addresses in this '
               'wallet, ensure you can pair with your device, or that you have '
-              'its seed (and passphrase, if any).  Otherwise all bitcoins you '
+              'its seed (and passphrase, if any).  Otherwise all Ganjacoins you '
               'receive will be unspendable.').format(plugin.device))
 
     def unpaired_device_infos(self, handler, plugin, devices=None):

@@ -1,5 +1,6 @@
-# Electrum - Lightweight Bitcoin Client
+# Electrum-Ganja - Lightweight Ganjacoin Client
 # Copyright (c) 2012 Thomas Voegtlin
+# Copyright (c) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -21,7 +22,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from .util import ThreadJob
-from .bitcoin import *
+from .ganja import *
 
 
 class SPV(ThreadJob):

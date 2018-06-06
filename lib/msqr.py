@@ -8,7 +8,7 @@ def modular_sqrt(a, p):
     x^2 = a (mod p)
     And returns x. Note that p - x is also a root.
 
-    0 is returned is no square root exists for
+    0 is returned if no square root exists for
     these a and p.
 
     The Tonelli-Shanks algorithm is used (except

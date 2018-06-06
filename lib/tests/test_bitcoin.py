@@ -2,8 +2,8 @@ import base64
 import unittest
 import sys
 
-from lib import bitcoin
-from lib.bitcoin import (
+from lib import ganja
+from lib.ganja import (
     public_key_to_p2pkh,
     bip32_root, bip32_public_derivation, bip32_private_derivation,
     Hash, address_from_private_key,
@@ -128,7 +128,7 @@ class Test_bitcoin(SequentialTestCase):
     @needs_test_with_all_ecc_implementations
     def test_msg_signing(self):
         msg1 = b'Chancellor on brink of second bailout for banks'
-        msg2 = b'Electrum'
+        msg2 = b'Electrum-Ganja'
 
         def sign_message_with_wif_privkey(wif_privkey, msg):
             txin_type, privkey, compressed = deserialize_privkey(wif_privkey)

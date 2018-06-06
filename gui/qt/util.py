@@ -10,9 +10,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from electrum.i18n import _
-from electrum.util import FileImportFailed, FileExportFailed
-from electrum.paymentrequest import PR_UNPAID, PR_PAID, PR_EXPIRED
+from electrum_ganja.i18n import _
+from electrum_ganja.util import FileImportFailed, FileExportFailed
+from electrum_ganja.paymentrequest import PR_UNPAID, PR_PAID, PR_EXPIRED
 
 
 if platform.system() == 'Windows':
@@ -378,7 +378,7 @@ def filename_field(parent, config, defaultname, select_msg):
 
     return vbox, filename_e, b1
 
-class ElectrumItemDelegate(QStyledItemDelegate):
+class Electrum_GanjaItemDelegate(QStyledItemDelegate):
     def createEditor(self, parent, option, index):
         return self.parent().createEditor(parent, option, index)
 
@@ -407,7 +407,7 @@ class MyTreeWidget(QTreeWidget):
         else:
             editable_columns = set(editable_columns)
         self.editable_columns = editable_columns
-        self.setItemDelegate(ElectrumItemDelegate(self))
+        self.setItemDelegate(Electrum_GanjaItemDelegate(self))
         self.itemDoubleClicked.connect(self.on_doubleclick)
         self.update_headers(headers)
         self.current_filter = ""
@@ -728,42 +728,42 @@ class AcceptFileDragDrop:
         raise NotImplementedError()
 
 
-def import_meta_gui(electrum_window, title, importer, on_success):
+def import_meta_gui(electrum_ganja_window, title, importer, on_success):
     filter_ = "JSON (*.json);;All files (*)"
-    filename = electrum_window.getOpenFileName(_("Open {} file").format(title), filter_)
+    filename = electrum_ganja_window.getOpenFileName(_("Open {} file").format(title), filter_)
     if not filename:
         return
     try:
         importer(filename)
     except FileImportFailed as e:
-        electrum_window.show_critical(str(e))
+        electrum_ganja_window.show_critical(str(e))
     else:
-        electrum_window.show_message(_("Your {} were successfully imported").format(title))
+        electrum_ganja_window.show_message(_("Your {} were successfully imported").format(title))
         on_success()
 
 
-def export_meta_gui(electrum_window, title, exporter):
+def export_meta_gui(electrum_ganja_window, title, exporter):
     filter_ = "JSON (*.json);;All files (*)"
-    filename = electrum_window.getSaveFileName(_("Select file to save your {}").format(title),
-                                               'electrum_{}.json'.format(title), filter_)
+    filename = electrum_ganja_window.getSaveFileName(_("Select file to save your {}").format(title),
+                                               'electrum_ganja_{}.json'.format(title), filter_)
     if not filename:
         return
     try:
         exporter(filename)
     except FileExportFailed as e:
-        electrum_window.show_critical(str(e))
+        electrum_ganja_window.show_critical(str(e))
     else:
-        electrum_window.show_message(_("Your {0} were exported to '{1}'")
+        electrum_ganja_window.show_message(_("Your {0} were exported to '{1}'")
                                      .format(title, str(filename)))
 
 
 def get_parent_main_window(widget):
-    """Returns a reference to the ElectrumWindow this widget belongs to."""
-    from .main_window import ElectrumWindow
+    """Returns a reference to the Electrum_GanjaWindow this widget belongs to."""
+    from .main_window import Electrum_GanjaWindow
     for _ in range(100):
         if widget is None:
             return None
-        if not isinstance(widget, ElectrumWindow):
+        if not isinstance(widget, Electrum_GanjaWindow):
             widget = widget.parentWidget()
         else:
             return widget

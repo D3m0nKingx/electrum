@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2011 thomasv@gitorious
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -43,7 +44,7 @@ from . import pem
 
 
 def Connection(server, queue, config_path):
-    """Makes asynchronous connections to a remote Electrum server.
+    """Makes asynchronous connections to a remote Electrum-Ganja server.
     Returns the running thread that is making the connection.
 
     Once the thread has connected, it finishes, placing a tuple on the
@@ -242,7 +243,7 @@ class TcpConnection(threading.Thread, util.PrintError):
 
 class Interface(util.PrintError):
     """The Interface class handles a socket connected to a single remote
-    Electrum server.  Its exposed API is:
+    Electrum-Ganja server.  Its exposed API is:
 
     - Member functions close(), fileno(), get_responses(), has_timed_out(),
       ping_required(), queue_request(), send_requests()

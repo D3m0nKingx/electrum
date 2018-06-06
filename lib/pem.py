@@ -46,7 +46,7 @@ def b2a_base64(b):
 
 def dePem(s, name):
     """Decode a PEM string into a bytearray of its payload.
-    
+
     The input must contain an appropriate PEM prefix and postfix
     based on the input name string, e.g. for name="CERTIFICATE":
 

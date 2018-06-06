@@ -1,7 +1,7 @@
 include LICENCE RELEASE-NOTES AUTHORS
 include README.rst
-include electrum.conf.sample
-include electrum.desktop
+include electrum-ganja.conf.sample
+include electrum-ganja.desktop
 include *.py
 include electrum
 include contrib/requirements/requirements.txt
@@ -14,4 +14,3 @@ recursive-include packages cacert.pem
 include icons.qrc
 recursive-include icons *
 recursive-include scripts *
-

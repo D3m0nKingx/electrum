@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2011 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -32,8 +33,8 @@ from typing import Sequence, Union
 from .util import print_error, profiler
 
 from . import ecc
-from . import bitcoin
-from .bitcoin import *
+from . import ganja
+from .ganja import *
 import struct
 import traceback
 import sys
@@ -78,7 +79,7 @@ class BCDataStream(object):
         # 0 to 252 :  1-byte-length followed by bytes (if any)
         # 253 to 65,535 : byte'253' 2-byte-length followed by bytes
         # 65,536 to 4,294,967,295 : byte '254' 4-byte-length followed by bytes
-        # ... and the Bitcoin client is coded to understand:
+        # ... and the Ganjacoin client is coded to understand:
         # greater than 4,294,967,295 : byte '255' 8-byte-length followed by bytes of string
         # ... but I don't think it actually handles any strings that big.
         if self.input is None:
@@ -312,7 +313,7 @@ def parse_scriptSig(d, _bytes):
         if item[0] == 0:
             # segwit embedded into p2sh
             # witness version 0
-            d['address'] = bitcoin.hash160_to_p2sh(bitcoin.hash_160(item))
+            d['address'] = ganja.hash160_to_p2sh(ganja.hash_160(item))
             if len(item) == 22:
                 d['type'] = 'p2wpkh-p2sh'
             elif len(item) == 34:
@@ -422,7 +423,7 @@ def get_address_from_output_script(_bytes, *, net=None):
     if match_decoded(decoded, match):
         return TYPE_PUBKEY, bh2u(decoded[0][1])
 
-    # Pay-by-Bitcoin-address TxOuts look like:
+    # Pay-by-Ganjacoin-address TxOuts look like:
     # DUP HASH160 20 BYTES:... EQUALVERIFY CHECKSIG
     match = [ opcodes.OP_DUP, opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG ]
     if match_decoded(decoded, match):
@@ -476,10 +477,10 @@ def construct_witness(items: Sequence[Union[str, int, bytes]]) -> str:
     witness = var_int(len(items))
     for item in items:
         if type(item) is int:
-            item = bitcoin.script_num_to_hex(item)
+            item = ganja.script_num_to_hex(item)
         elif type(item) is bytes:
             item = bh2u(item)
-        witness += bitcoin.witness_push(item)
+        witness += ganja.witness_push(item)
     return witness
 
 
@@ -520,7 +521,7 @@ def parse_witness(vds, txin):
             txin['witness_script'] = witness_script
             if not txin.get('scriptSig'):  # native segwit script
                 txin['type'] = 'p2wsh'
-                txin['address'] = bitcoin.script_to_p2wsh(witness_script)
+                txin['address'] = ganja.script_to_p2wsh(witness_script)
         elif txin['type'] == 'p2wpkh-p2sh' or n == 2:
             txin['num_sig'] = 1
             txin['x_pubkeys'] = [w[1]]
@@ -528,7 +529,7 @@ def parse_witness(vds, txin):
             txin['signatures'] = parse_sig([w[0]])
             if not txin.get('scriptSig'):  # native segwit script
                 txin['type'] = 'p2wpkh'
-                txin['address'] = bitcoin.public_key_to_p2wpkh(bfh(txin['pubkeys'][0]))
+                txin['address'] = ganja.public_key_to_p2wpkh(bfh(txin['pubkeys'][0]))
         else:
             raise UnknownTxinType()
     except UnknownTxinType:
@@ -704,9 +705,9 @@ class Transaction:
         if output_type == TYPE_SCRIPT:
             return addr
         elif output_type == TYPE_ADDRESS:
-            return bitcoin.address_to_script(addr)
+            return ganja.address_to_script(addr)
         elif output_type == TYPE_PUBKEY:
-            return bitcoin.public_key_to_p2pk_script(addr)
+            return ganja.public_key_to_p2pk_script(addr)
         else:
             raise TypeError('Unknown output type')
 
@@ -719,7 +720,7 @@ class Transaction:
                 return 0x41
             elif x_pubkey[0:2] == 'ff':  # bip32 extended pubkey
                 return 0x21
-            elif x_pubkey[0:2] == 'fe':  # old electrum extended pubkey
+            elif x_pubkey[0:2] == 'fe':  # old electrum-ganja extended pubkey
                 return 0x41
         except Exception as e:
             pass
@@ -822,11 +823,11 @@ class Transaction:
             return ''
         elif _type == 'p2wpkh-p2sh':
             pubkey = safe_parse_pubkey(pubkeys[0])
-            scriptSig = bitcoin.p2wpkh_nested_script(pubkey)
+            scriptSig = ganja.p2wpkh_nested_script(pubkey)
             return push_script(scriptSig)
         elif _type == 'p2wsh-p2sh':
             witness_script = self.get_preimage_script(txin)
-            scriptSig = bitcoin.p2wsh_nested_script(witness_script)
+            scriptSig = ganja.p2wsh_nested_script(witness_script)
             return push_script(scriptSig)
         elif _type == 'address':
             script += push_script(pubkeys[0])
@@ -851,16 +852,16 @@ class Transaction:
 
         pubkeys, x_pubkeys = self.get_sorted_pubkeys(txin)
         if txin['type'] == 'p2pkh':
-            return bitcoin.address_to_script(txin['address'])
+            return ganja.address_to_script(txin['address'])
         elif txin['type'] in ['p2sh', 'p2wsh', 'p2wsh-p2sh']:
             return multisig_script(pubkeys, txin['num_sig'])
         elif txin['type'] in ['p2wpkh', 'p2wpkh-p2sh']:
             pubkey = pubkeys[0]
-            pkh = bh2u(bitcoin.hash_160(bfh(pubkey)))
+            pkh = bh2u(ganja.hash_160(bfh(pubkey)))
             return '76a9' + push_script(pkh) + '88ac'
         elif txin['type'] == 'p2pk':
             pubkey = pubkeys[0]
-            return bitcoin.public_key_to_p2pk_script(pubkey)
+            return ganja.public_key_to_p2pk_script(pubkey)
         else:
             raise TypeError('Unknown txin type', txin['type'])
 
@@ -1009,7 +1010,7 @@ class Transaction:
     @classmethod
     def estimated_output_size(cls, address):
         """Return an estimate of serialized output size in bytes."""
-        script = bitcoin.address_to_script(address)
+        script = ganja.address_to_script(address)
         # 8 byte value + 1 byte script len + script
         return 9 + len(script) // 2
 
@@ -1092,7 +1093,7 @@ class Transaction:
             if type == TYPE_ADDRESS:
                 addr = x
             elif type == TYPE_PUBKEY:
-                addr = bitcoin.public_key_to_p2pkh(bfh(x))
+                addr = ganja.public_key_to_p2pkh(bfh(x))
             else:
                 addr = 'SCRIPT ' + x
             o.append((addr,v))      # consider using yield (addr, v)

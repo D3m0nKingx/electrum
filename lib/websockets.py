@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2015 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -35,7 +36,7 @@ from . import util
 
 request_queue = queue.Queue()
 
-class ElectrumWebSocket(WebSocket):
+class Electrum_GanjaWebSocket(WebSocket):
 
     def handleMessage(self):
         assert self.data[0:3] == 'id:'
@@ -98,7 +99,7 @@ class WsClientThread(util.DaemonThread):
             params = r.get('params')
             result = r.get('result')
             if result is None:
-                continue    
+                continue
             if method == 'blockchain.scripthash.subscribe':
                 self.network.send([('blockchain.scripthash.get_balance', params)], self.response_queue.put)
             elif method == 'blockchain.scripthash.get_balance':
@@ -130,7 +131,7 @@ class WebSocketServer(threading.Thread):
         port = self.config.get('websocket_port', 9999)
         certfile = self.config.get('ssl_chain')
         keyfile = self.config.get('ssl_privkey')
-        self.server = SimpleSSLWebSocketServer(host, port, ElectrumWebSocket, certfile, keyfile)
+        self.server = SimpleSSLWebSocketServer(host, port, Electrum_GanjaWebSocket, certfile, keyfile)
         self.server.serveforever()
 
 

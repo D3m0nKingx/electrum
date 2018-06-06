@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2016 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -28,7 +29,7 @@ import sys
 import traceback
 from functools import partial
 
-from . import bitcoin
+from . import ganja
 from . import keystore
 from .keystore import bip44_derivation
 from .wallet import Imported_Wallet, Standard_Wallet, Multisig_Wallet, wallet_types, Wallet
@@ -95,8 +96,8 @@ class BaseWizard(object):
         wallet_kinds = [
             ('standard',  _("Standard wallet")),
             ('2fa', _("Wallet with two-factor authentication")),
-            ('multisig',  _("Multi-signature wallet")),
-            ('imported',  _("Import Bitcoin addresses or private keys")),
+            #('multisig',  _("Multi-signature wallet")),
+            ('imported',  _("Import Ganjacoin addresses or private keys")),
         ]
         choices = [pair for pair in wallet_kinds if pair[0] in wallet_types]
         self.choice_dialog(title=title, message=message, choices=choices, run_next=self.on_wallet_type)
@@ -159,8 +160,8 @@ class BaseWizard(object):
 
     def import_addresses_or_keys(self):
         v = lambda x: keystore.is_address_list(x) or keystore.is_private_key_list(x)
-        title = _("Import Bitcoin Addresses")
-        message = _("Enter a list of Bitcoin addresses (this will create a watching-only wallet), or a list of private keys.")
+        title = _("Import Ganjacoin Addresses")
+        message = _("Enter a list of Ganjacoin addresses (this will create a watching-only wallet), or a list of private keys.")
         self.add_xpub_dialog(title=title, message=message, run_next=self.on_import,
                              is_valid=v, allow_multi=True)
 
@@ -312,7 +313,7 @@ class BaseWizard(object):
         while True:
             try:
                 self.line_dialog(run_next=f, title=_('Derivation'), message=message,
-                                 default=default, test=bitcoin.is_bip32_derivation,
+                                 default=default, test=ganja.is_bip32_derivation,
                                  presets=presets)
                 return
             except ScriptTypeNotSupported as e:
@@ -354,12 +355,12 @@ class BaseWizard(object):
     def restore_from_seed(self):
         self.opt_bip39 = True
         self.opt_ext = True
-        is_cosigning_seed = lambda x: bitcoin.seed_type(x) in ['standard', 'segwit']
-        test = bitcoin.is_seed if self.wallet_type == 'standard' else is_cosigning_seed
+        is_cosigning_seed = lambda x: ganja.seed_type(x) in ['standard', 'segwit']
+        test = ganja.is_seed if self.wallet_type == 'standard' else is_cosigning_seed
         self.restore_seed_dialog(run_next=self.on_restore_seed, test=test)
 
     def on_restore_seed(self, seed, is_bip39, is_ext):
-        self.seed_type = 'bip39' if is_bip39 else bitcoin.seed_type(seed)
+        self.seed_type = 'bip39' if is_bip39 else ganja.seed_type(seed)
         if self.seed_type == 'bip39':
             f = lambda passphrase: self.on_restore_bip39(seed, passphrase)
             self.passphrase_dialog(run_next=f) if is_ext else f('')
@@ -393,7 +394,7 @@ class BaseWizard(object):
     def on_keystore(self, k):
         has_xpub = isinstance(k, keystore.Xpub)
         if has_xpub:
-            from .bitcoin import xpub_type
+            from .ganja import xpub_type
             t1 = xpub_type(k.xpub)
         if self.wallet_type == 'standard':
             if has_xpub and t1 not in ['standard', 'p2wpkh', 'p2wpkh-p2sh']:
@@ -500,7 +501,7 @@ class BaseWizard(object):
             _("The type of addresses used by your wallet will depend on your seed."),
             _("Segwit wallets use bech32 addresses, defined in BIP173."),
             _("Please note that websites and other wallets may not support these addresses yet."),
-            _("Thus, you might want to keep using a non-segwit wallet in order to be able to receive bitcoins during the transition period.")
+            _("Thus, you might want to keep using a non-segwit wallet in order to be able to receive Ganjacoins during the transition period.")
         ])
         choices = [
             ('create_standard_seed', _('Standard')),
@@ -547,5 +548,5 @@ class BaseWizard(object):
             self.wallet.synchronize()
             self.wallet.storage.write()
             self.terminate()
-        msg = _("Electrum is generating your addresses, please wait...")
+        msg = _("Electrum-Ganja is generating your addresses, please wait...")
         self.waiting_dialog(task, msg)

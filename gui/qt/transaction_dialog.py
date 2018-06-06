@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2012 thomasv@gitorious
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -31,14 +32,14 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from electrum.bitcoin import base_encode
-from electrum.i18n import _
-from electrum.plugins import run_hook
-from electrum import simple_config
+from electrum_ganja.ganja import base_encode
+from electrum_ganja.i18n import _
+from electrum_ganja.plugins import run_hook
+from electrum_ganja import simple_config
 
-from electrum.util import bfh
-from electrum.wallet import AddTransactionException
-from electrum.transaction import SerializationError
+from electrum_ganja.util import bfh
+from electrum_ganja.wallet import AddTransactionException
+from electrum_ganja.transaction import SerializationError
 
 from .util import *
 
@@ -55,7 +56,7 @@ def show_transaction(tx, parent, desc=None, prompt_if_unsaved=False):
         d = TxDialog(tx, parent, desc, prompt_if_unsaved)
     except SerializationError as e:
         traceback.print_exc(file=sys.stderr)
-        parent.show_critical(_("Electrum was unable to deserialize the transaction:") + "\n" + str(e))
+        parent.show_critical(_("Electrum-Ganja was unable to deserialize the transaction:") + "\n" + str(e))
     else:
         dialogs.append(d)
         d.show()

@@ -1,5 +1,6 @@
-# Electrum - Lightweight Bitcoin Client
+# Electrum-Ganja - Lightweight Ganjacoin Client
 # Copyright (c) 2011-2016 Thomas Voegtlin
+# Copyright (c) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -35,12 +36,12 @@ import json
 
 import socks
 from . import util
-from . import bitcoin
-from .bitcoin import *
+from . import ganja
+from .ganja import *
 from . import constants
 from .interface import Connection, Interface
 from . import blockchain
-from .version import ELECTRUM_VERSION, PROTOCOL_VERSION
+from .version import ELECTRUM_GANJA_VERSION, PROTOCOL_VERSION
 from .i18n import _
 
 
@@ -151,7 +152,7 @@ def serialize_server(host, port, protocol):
 
 
 class Network(util.DaemonThread):
-    """The Network class manages a set of connections to remote electrum
+    """The Network class manages a set of connections to remote electrum-ganja
     servers, each connected socket is handled by an Interface() object.
     Connections are initiated by a Connection() thread which stops once
     the connection succeeds or fails.
@@ -194,7 +195,7 @@ class Network(util.DaemonThread):
 
         self.banner = ''
         self.donation_address = ''
-        self.relay_fee = None
+        self.relay_fee = 1000
         # callbacks passed with subscriptions
         self.subscriptions = defaultdict(list)
         self.sub_cache = {}
@@ -308,7 +309,7 @@ class Network(util.DaemonThread):
         requests = self.unanswered_requests.values()
         self.unanswered_requests = {}
         if self.interface.ping_required():
-            params = [ELECTRUM_VERSION, PROTOCOL_VERSION]
+            params = [ELECTRUM_GANJA_VERSION, PROTOCOL_VERSION]
             self.queue_request('server.version', params, self.interface)
         for request in requests:
             message_id = self.queue_request(request[0], request[1])
@@ -633,13 +634,13 @@ class Network(util.DaemonThread):
         return cb2
 
     def subscribe_to_addresses(self, addresses, callback):
-        hash2address = {bitcoin.address_to_scripthash(address): address for address in addresses}
+        hash2address = {ganja.address_to_scripthash(address): address for address in addresses}
         self.h2addr.update(hash2address)
         msgs = [('blockchain.scripthash.subscribe', [x]) for x in hash2address.keys()]
         self.send(msgs, self.map_scripthash_to_address(callback))
 
     def request_address_history(self, address, callback):
-        h = bitcoin.address_to_scripthash(address)
+        h = ganja.address_to_scripthash(address)
         self.h2addr.update({h: address})
         self.send([('blockchain.scripthash.get_history', [h])], self.map_scripthash_to_address(callback))
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME_ROOT=electrum
+NAME_ROOT=electrum-ganja
 PYTHON_VERSION=3.5.4
 
 # These settings probably don't need any change
@@ -19,13 +19,13 @@ set -e
 mkdir -p tmp
 cd tmp
 
-if [ -d ./electrum ]; then
-  rm ./electrum -rf
+if [ -d ./electrum-ganja ]; then
+  rm ./electrum-ganja -rf
 fi
 
-git clone https://github.com/spesmilo/electrum -b master
+git clone https://github.com/D3m0nKingx/electrum-ganja -b master
 
-pushd electrum
+pushd electrum-ganja
 if [ ! -z "$1" ]; then
     # a commit/tag/branch was specified
     if ! git cat-file -e "$1" 2> /dev/null
@@ -37,15 +37,15 @@ if [ ! -z "$1" ]; then
     git checkout $1
 fi
 
-# Load electrum-icons and electrum-locale for this release
+# Load electrum-ganja-icons and electrum-ganja-locale for this release
 git submodule init
 git submodule update
 
-pushd ./contrib/deterministic-build/electrum-locale
+pushd ./contrib/deterministic-build/electrum-ganja-locale
 for i in ./locale/*; do
     dir=$i/LC_MESSAGES
     mkdir -p $dir
-    msgfmt --output-file=$dir/electrum.mo $i/electrum.po || true
+    msgfmt --output-file=$dir/electrum-ganja.mo $i/electrum-ganja.po || true
 done
 popd
 
@@ -54,18 +54,18 @@ echo "Last commit: $VERSION"
 find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
 popd
 
-rm -rf $WINEPREFIX/drive_c/electrum
-cp -r electrum $WINEPREFIX/drive_c/electrum
-cp electrum/LICENCE .
-cp -r ./electrum/contrib/deterministic-build/electrum-locale/locale $WINEPREFIX/drive_c/electrum/lib/
-cp ./electrum/contrib/deterministic-build/electrum-icons/icons_rc.py $WINEPREFIX/drive_c/electrum/gui/qt/
+rm -rf $WINEPREFIX/drive_c/electrum-ganja
+cp -r electrum-ganja $WINEPREFIX/drive_c/electrum-ganja
+cp electrum-ganja/LICENCE .
+cp -r ./electrum-ganja/contrib/deterministic-build/electrum-ganja-locale/locale $WINEPREFIX/drive_c/electrum-ganja/lib/
+cp ./electrum-ganja/contrib/deterministic-build/electrum-ganja-icons/icons_rc.py $WINEPREFIX/drive_c/electrum-ganja/gui/qt/
 
 # Install frozen dependencies
 $PYTHON -m pip install -r ../../deterministic-build/requirements.txt
 
 $PYTHON -m pip install -r ../../deterministic-build/requirements-hw.txt
 
-pushd $WINEPREFIX/drive_c/electrum
+pushd $WINEPREFIX/drive_c/electrum-ganja
 $PYTHON setup.py install
 popd
 
@@ -82,12 +82,12 @@ find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
 popd
 
 # build NSIS installer
-# $VERSION could be passed to the electrum.nsi script, but this would require some rewriting in the script itself.
-wine "$WINEPREFIX/drive_c/Program Files (x86)/NSIS/makensis.exe" /DPRODUCT_VERSION=$VERSION electrum.nsi
+# $VERSION could be passed to the electrum-ganja.nsi script, but this would require some rewriting in the script itself.
+wine "$WINEPREFIX/drive_c/Program Files (x86)/NSIS/makensis.exe" /DPRODUCT_VERSION=$VERSION electrum-ganja.nsi
 
 cd dist
-mv electrum-setup.exe $NAME_ROOT-$VERSION-setup.exe
+mv electrum-ganja-setup.exe $NAME_ROOT-$VERSION-setup.exe
 cd ..
 
 echo "Done."
-md5sum dist/electrum*exe
+md5sum dist/electrum-ganja*exe

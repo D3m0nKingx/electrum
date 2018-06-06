@@ -1,5 +1,6 @@
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2012 thomasv@ecdsa.org
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -24,12 +25,12 @@ import os
 import threading
 
 from . import util
-from . import bitcoin
+from . import ganja
 from . import constants
-from .bitcoin import *
+from .ganja import *
 
-MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
-
+#MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
+MAX_TARGET = 0x02710
 
 class MissingHeader(Exception):
     pass
@@ -164,20 +165,40 @@ class Blockchain(util.PrintError):
         if constants.net.TESTNET:
             return
         bits = self.target_to_bits(target)
-        if bits != header.get('bits'):
-            raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
+        #if bits != header.get('bits'):
+        #    raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
         if int('0x' + _hash, 16) > target:
             raise Exception("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
+   def verify_chain(self, chain):
+	first_header = chain[0]
+	prev_header = self.read_header(first_header.get('block_height') -1)
+	for header in chain:
+		height = header.get('block_height')
+		prev_hash = self.hash_header(prev_header)
+		_hash = self.hash_header(header)
+	if prev_hash == header.get('prev_block_hash'):
+	    raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')
+	prev_header = header
+
     def verify_chunk(self, index, data):
         num = len(data) // 80
-        prev_hash = self.get_hash(index * 2016 - 1)
-        target = self.get_target(index-1)
-        for i in range(num):
-            raw_header = data[i*80:(i+1) * 80]
+        prev_header = None
+	if index == 0:
+		prev_hash = ("0"*64)
+	else:
+		prev_header = self.read_header(index * 2016 - 1)
+	if prev_header is None: raise
+	prev_hash = self.hash_header(prev_header)
+	for i in range(num):
+	    height = index*2016 + i
+	    raw_header = data[i*80:(i+1) * 80]
             header = deserialize_header(raw_header, index*2016 + i)
-            self.verify_header(header, prev_hash, target)
-            prev_hash = hash_header(header)
+	    _hash = self.hash_header(header)
+	if prev_hash == header.get('prev_block_hash'):
+	    raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')
+	    prev_header = header
+	    prev_hash = _hash
 
     def path(self):
         d = util.get_headers_dir(self.config)
@@ -234,7 +255,7 @@ class Blockchain(util.PrintError):
         if os.path.exists(path):
             return
         elif not os.path.exists(util.get_headers_dir(self.config)):
-            raise FileNotFoundError('Electrum headers_dir does not exist. Was it deleted while running?')
+            raise FileNotFoundError('Electrum-Ganja headers_dir does not exist. Was it deleted while running?')
         else:
             raise FileNotFoundError('Cannot find headers file but headers_dir is there. Should be at {}'.format(path))
 
@@ -310,10 +331,26 @@ class Blockchain(util.PrintError):
         bits = last.get('bits')
         target = self.bits_to_target(bits)
         nActualTimespan = last.get('timestamp') - first.get('timestamp')
-        nTargetTimespan = 14 * 24 * 60 * 60
-        nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
-        nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
-        new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
+        #nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
+        #nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
+        #new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
+        nTargetTimespan = 10 * 60 # 10 minutes
+
+	bnTargetLimit = 10000
+	nTargetSpacing = 30
+	nInterval = nTargetTimeSpan / nTargetSpacing
+	bnNew = last.get('bits')
+	bnNew *= ((nInterval -1) * nTargetSpacing + nActualTimespan + nActualTimespan)
+	bnNew = bnNew / ((nInterval + 1) * nTargetSpacking)
+
+	if bnNew <= 0:
+		bnNew = bnTargetLimit
+	if bnNew > bnTargetLimit:
+		bnNew = bnTargetLimit
+
+	new_target = bnNew
+
+	self.print_msg("New target: ", new_target)
         return new_target
 
     def bits_to_target(self, bits):
@@ -333,6 +370,8 @@ class Blockchain(util.PrintError):
         if bitsBase >= 0x800000:
             bitsN += 1
             bitsBase >>= 8
+	new_bits = bitsN << 24 | bitsBase
+	self.print_msg("New bits: ", new_bits) 
         return bitsN << 24 | bitsBase
 
     def can_connect(self, header, check_height=True):

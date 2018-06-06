@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2015 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -36,15 +37,15 @@ import zlib
 from .util import PrintError, profiler, InvalidPassword, WalletFileException, bfh
 from .plugins import run_hook, plugin_loaders
 from .keystore import bip44_derivation
-from . import bitcoin
+from . import ganja
 from . import ecc
 
 
 # seed_version is now used for the version of the wallet file
 
-OLD_SEED_VERSION = 4        # electrum versions < 2.0
-NEW_SEED_VERSION = 11       # electrum versions >= 2.0
-FINAL_SEED_VERSION = 16     # electrum >= 2.7 will set this to prevent
+OLD_SEED_VERSION = 4        # electrum-ganja versions < 2.0
+NEW_SEED_VERSION = 11       # electrum-ganja versions >= 2.0
+FINAL_SEED_VERSION = 16     # electrum-ganja >= 2.7 will set this to prevent
                             # old versions from overwriting new format
 
 
@@ -443,7 +444,7 @@ class WalletStorage(PrintError):
                 d = {'change': []}
                 receiving_addresses = []
                 for pubkey in pubkeys:
-                    addr = bitcoin.pubkey_to_address('p2pkh', pubkey)
+                    addr = ganja.pubkey_to_address('p2pkh', pubkey)
                     receiving_addresses.append(addr)
                 d['receiving'] = receiving_addresses
                 self.put('addresses', d)
@@ -468,7 +469,7 @@ class WalletStorage(PrintError):
                 assert len(addresses) == len(pubkeys)
                 d = {}
                 for pubkey in pubkeys:
-                    addr = bitcoin.pubkey_to_address('p2pkh', pubkey)
+                    addr = ganja.pubkey_to_address('p2pkh', pubkey)
                     assert addr in addresses
                     d[addr] = {
                         'pubkey': pubkey,
@@ -520,7 +521,7 @@ class WalletStorage(PrintError):
             assert isinstance(addresses, dict)
             addresses_new = dict()
             for address, details in addresses.items():
-                if not bitcoin.is_address(address):
+                if not ganja.is_address(address):
                     remove_address(address)
                     continue
                 if details is None:
@@ -593,7 +594,7 @@ class WalletStorage(PrintError):
         if not seed_version:
             seed_version = OLD_SEED_VERSION if len(self.get('master_public_key','')) == 128 else NEW_SEED_VERSION
         if seed_version > FINAL_SEED_VERSION:
-            raise WalletFileException('This version of Electrum is too old to open this wallet.\n'
+            raise WalletFileException('This version of Electrum-Ganja is too old to open this wallet.\n'
                                       '(highest supported storage version: {}, version of this file: {})'
                                       .format(FINAL_SEED_VERSION, seed_version))
         if seed_version==14 and self.get('seed_type') == 'segwit':
@@ -616,6 +617,6 @@ class WalletStorage(PrintError):
                 # pbkdf2 was not included with the binaries, and wallet creation aborted.
                 msg += "\nIt does not contain any keys, and can safely be removed."
             else:
-                # creation was complete if electrum was run from source
-                msg += "\nPlease open this file with Electrum 1.9.8, and move your coins to a new wallet."
+                # creation was complete if electrum-ganja was run from source
+                msg += "\nPlease open this file with Electrum-Ganja 1.9.8, and move your coins to a new wallet."
         raise WalletFileException(msg)

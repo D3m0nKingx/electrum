@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2011 thomasv@gitorious
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -26,7 +27,7 @@
 import hashlib
 import hmac
 
-from .util import bfh, bh2u, BitcoinException, print_error, assert_bytes, to_bytes, inv_dict
+from .util import bfh, bh2u, GanjacoinException, print_error, assert_bytes, to_bytes, inv_dict
 from . import version
 from . import segwit_addr
 from . import constants
@@ -36,11 +37,11 @@ from .crypto import Hash, sha256, hash_160
 
 ################################## transactions
 
-COINBASE_MATURITY = 100
+COINBASE_MATURITY = 30
 COIN = 100000000
 
 # supported types of transaction outputs
-TYPE_ADDRESS = 0
+TYPE_ADDRESS = 103
 TYPE_PUBKEY  = 1
 TYPE_SCRIPT  = 2
 
@@ -159,15 +160,15 @@ def is_old_seed(seed):
     try:
         # checks here are deliberately left weak for legacy reasons, see #3149
         old_mnemonic.mn_decode(words)
-        uses_electrum_words = True
+        uses_electrum_ganja_words = True
     except Exception:
-        uses_electrum_words = False
+        uses_electrum_ganja_words = False
     try:
         seed = bfh(seed)
         is_hex = (len(seed) == 16 or len(seed) == 32)
     except Exception:
         is_hex = False
-    return is_hex or (uses_electrum_words and (len(words) == 12 or len(words) == 24))
+    return is_hex or (uses_electrum_ganja_words and (len(words) == 12 or len(words) == 24))
 
 
 def seed_type(x):
@@ -186,7 +187,7 @@ is_seed = lambda x: bool(seed_type(x))
 
 ############ functions from pywallet #####################
 
-def hash160_to_b58_address(h160: bytes, addrtype):
+def hash160_to_b58_address(h160: bytes, addrtype=103):
     s = bytes([addrtype])
     s += h160
     return base_encode(s+Hash(s)[0:4], base=58)
@@ -265,7 +266,7 @@ def address_to_script(addr, *, net=None):
     witver, witprog = segwit_addr.decode(net.SEGWIT_HRP, addr)
     if witprog is not None:
         if not (0 <= witver <= 16):
-            raise BitcoinException('impossible witness version: {}'.format(witver))
+            raise GanjacoinException('impossible witness version: {}'.format(witver))
         OP_n = witver + 0x50 if witver > 0 else 0
         script = bh2u(bytes([OP_n]))
         script += push_script(bh2u(bytes(witprog)))
@@ -280,7 +281,7 @@ def address_to_script(addr, *, net=None):
         script += push_script(bh2u(hash_160))
         script += '87'                                       # op_equal
     else:
-        raise BitcoinException('unknown address type: {}'.format(addrtype))
+        raise GanjacoinException('unknown address type: {}'.format(addrtype))
     return script
 
 def address_to_scripthash(addr):
@@ -320,7 +321,7 @@ def base_encode(v: bytes, base: int) -> str:
         result.append(chars[mod])
         long_value = div
     result.append(chars[long_value])
-    # Bitcoin does a little leading-zero-compression:
+    # Ganjacoin does a little leading-zero-compression:
     # leading 0-bytes in the input become leading-1s
     nPad = 0
     for c in v:
@@ -426,12 +427,12 @@ def deserialize_privkey(key: str) -> (str, bytes, bool):
     if ':' in key:
         txin_type, key = key.split(sep=':', maxsplit=1)
         if txin_type not in SCRIPT_TYPES:
-            raise BitcoinException('unknown script type: {}'.format(txin_type))
+            raise GanjacoinException('unknown script type: {}'.format(txin_type))
     try:
         vch = DecodeBase58Check(key)
     except BaseException:
         neutered_privkey = str(key)[:3] + '..' + str(key)[-2:]
-        raise BitcoinException("cannot deserialize privkey {}"
+        raise GanjacoinException("cannot deserialize privkey {}"
                                .format(neutered_privkey))
 
     if txin_type is None:
@@ -441,14 +442,14 @@ def deserialize_privkey(key: str) -> (str, bytes, bool):
         try:
             txin_type = inverse_script_types[prefix_value]
         except KeyError:
-            raise BitcoinException('invalid prefix ({}) for WIF key (1)'.format(vch[0]))
+            raise GanjacoinException('invalid prefix ({}) for WIF key (1)'.format(vch[0]))
     else:
         # all other keys must have a fixed first byte
         if vch[0] != constants.net.WIF_PREFIX:
-            raise BitcoinException('invalid prefix ({}) for WIF key (2)'.format(vch[0]))
+            raise GanjacoinException('invalid prefix ({}) for WIF key (2)'.format(vch[0]))
 
     if len(vch) not in [33, 34]:
-        raise BitcoinException('invalid vch len for WIF key: {}'.format(len(vch)))
+        raise GanjacoinException('invalid vch len for WIF key: {}'.format(len(vch)))
     compressed = len(vch) == 34
     secret_bytes = vch[1:33]
     # we accept secrets outside curve range; cast into range here:
@@ -572,7 +573,7 @@ def xpub_header(xtype, *, net=None):
 def serialize_xprv(xtype, c, k, depth=0, fingerprint=b'\x00'*4,
                    child_number=b'\x00'*4, *, net=None):
     if not ecc.is_secret_within_curve_range(k):
-        raise BitcoinException('Impossible xprv (not within curve order)')
+        raise GanjacoinException('Impossible xprv (not within curve order)')
     xprv = xprv_header(xtype, net=net) \
            + bytes([depth]) + fingerprint + child_number + c + bytes([0]) + k
     return EncodeBase58Check(xprv)
@@ -590,7 +591,7 @@ def deserialize_xkey(xkey, prv, *, net=None):
         net = constants.net
     xkey = DecodeBase58Check(xkey)
     if len(xkey) != 78:
-        raise BitcoinException('Invalid length for extended key: {}'
+        raise GanjacoinException('Invalid length for extended key: {}'
                                .format(len(xkey)))
     depth = xkey[4]
     fingerprint = xkey[5:9]
@@ -599,13 +600,13 @@ def deserialize_xkey(xkey, prv, *, net=None):
     header = int('0x' + bh2u(xkey[0:4]), 16)
     headers = net.XPRV_HEADERS if prv else net.XPUB_HEADERS
     if header not in headers.values():
-        raise BitcoinException('Invalid extended key format: {}'
+        raise GanjacoinException('Invalid extended key format: {}'
                                .format(hex(header)))
     xtype = list(headers.keys())[list(headers.values()).index(header)]
     n = 33 if prv else 32
     K_or_k = xkey[13+n:]
     if prv and not ecc.is_secret_within_curve_range(K_or_k):
-        raise BitcoinException('Impossible xprv (not within curve order)')
+        raise GanjacoinException('Impossible xprv (not within curve order)')
     return xtype, depth, fingerprint, child_number, c, K_or_k
 
 
@@ -642,7 +643,7 @@ def xpub_from_xprv(xprv):
 
 
 def bip32_root(seed, xtype):
-    I = hmac.new(b"Bitcoin seed", seed, hashlib.sha512).digest()
+    I = hmac.new(b"Ganjacoin seed", seed, hashlib.sha512).digest()
     master_k = I[0:32]
     master_c = I[32:]
     # create xprv first, as that will check if master_k is within curve order

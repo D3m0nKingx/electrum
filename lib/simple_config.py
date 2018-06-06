@@ -80,8 +80,8 @@ class SimpleConfig(PrintError):
         self.cmdline_options.pop('config_version', None)
 
         # Set self.path and read the user config
-        self.user_config = {}  # for self.get in electrum_path()
-        self.path = self.electrum_path()
+        self.user_config = {}  # for self.get in electrum_ganja_path()
+        self.path = self.electrum_ganja_path()
         self.user_config = read_user_config_function(self.path)
         if not self.user_config:
             # avoid new config getting upgraded
@@ -98,10 +98,10 @@ class SimpleConfig(PrintError):
         # Make a singleton instance of 'self'
         set_config(self)
 
-    def electrum_path(self):
-        # Read electrum_path from command line
+    def electrum_ganja_path(self):
+        # Read electrum_ganja_path from command line
         # Otherwise use the user's default data directory.
-        path = self.get('electrum_path')
+        path = self.get('electrum_ganja_path')
         if path is None:
             path = self.user_dir()
 
@@ -113,7 +113,7 @@ class SimpleConfig(PrintError):
             path = os.path.join(path, 'regtest')
             make_dir(path, allow_symlink=False)
 
-        self.print_error("electrum directory", path)
+        self.print_error("electrum-ganja directory", path)
         return path
 
     def rename_config_keys(self, config, keypairs, deprecation_warning=False):
@@ -237,7 +237,7 @@ class SimpleConfig(PrintError):
         new_path = os.path.join(self.path, "wallets", "default_wallet")
 
         # default path in pre 1.9 versions
-        old_path = os.path.join(self.path, "electrum.dat")
+        old_path = os.path.join(self.path, "electrum-ganja.dat")
         if os.path.exists(old_path) and not os.path.exists(new_path):
             os.rename(old_path, new_path)
 
@@ -491,7 +491,7 @@ class SimpleConfig(PrintError):
 
 
 def read_user_config(path):
-    """Parse and store the user config settings in electrum.conf into user_config[]."""
+    """Parse and store the user config settings in electrum-ganja.conf into user_config[]."""
     if not path:
         return {}
     config_path = os.path.join(path, "config")

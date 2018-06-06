@@ -13,7 +13,7 @@ else:
 PYTHON_VERSION = '3.5.4'
 PYHOME = 'c:/python' + PYTHON_VERSION
 
-home = 'C:\\electrum\\'
+home = 'C:\\electrum-ganja\\'
 
 # see https://github.com/pyinstaller/pyinstaller/issues/2005
 hiddenimports = []
@@ -31,14 +31,14 @@ binaries += [b for b in collect_dynamic_libs('PyQt5') if 'qwindowsvista' in b[0]
 binaries += [('C:/tmp/libsecp256k1.dll', '.')]
 
 datas = [
-    (home+'lib/currencies.json', 'electrum'),
-    (home+'lib/servers.json', 'electrum'),
-    (home+'lib/checkpoints.json', 'electrum'),
-    (home+'lib/servers_testnet.json', 'electrum'),
-    (home+'lib/checkpoints_testnet.json', 'electrum'),
-    (home+'lib/wordlist/english.txt', 'electrum/wordlist'),
-    (home+'lib/locale', 'electrum/locale'),
-    (home+'plugins', 'electrum_plugins'),
+    (home+'lib/currencies.json', 'electrum-ganja'),
+    (home+'lib/servers.json', 'electrum-ganja'),
+    (home+'lib/checkpoints.json', 'electrum-ganja'),
+    (home+'lib/servers_testnet.json', 'electrum-ganja'),
+    (home+'lib/checkpoints_testnet.json', 'electrum-ganja'),
+    (home+'lib/wordlist/english.txt', 'electrum-ganja/wordlist'),
+    (home+'lib/locale', 'electrum-ganja/locale'),
+    (home+'plugins', 'electrum-ganja_plugins'),
     ('C:\\Program Files (x86)\\ZBar\\bin\\', '.')
 ]
 datas += collect_data_files('trezorlib')
@@ -46,13 +46,14 @@ datas += collect_data_files('btchip')
 datas += collect_data_files('keepkeylib')
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
-a = Analysis([home+'electrum',
+a = Analysis([home+'electrum-ganja',
               home+'gui/qt/main_window.py',
               home+'gui/text.py',
               home+'lib/util.py',
               home+'lib/wallet.py',
               home+'lib/simple_config.py',
-              home+'lib/bitcoin.py',
+              home+'lib/ganja.py',
+	      home+'lib/blockchain.py',
               home+'lib/dnssec.py',
               home+'lib/commands.py',
               home+'plugins/cosigner_pool/qt.py',
@@ -72,7 +73,7 @@ a = Analysis([home+'electrum',
 
 # http://stackoverflow.com/questions/19055089/pyinstaller-onefile-warning-pyconfig-h-when-importing-scipy-or-scipy-signal
 for d in a.datas:
-    if 'pyconfig' in d[0]: 
+    if 'pyconfig' in d[0]:
         a.datas.remove(d)
         break
 
@@ -89,25 +90,25 @@ exe_standalone = EXE(
     pyz,
     a.scripts,
     a.binaries,
-    a.datas, 
-    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name + ".exe"),
+    a.datas,
+    name=os.path.join('build\\pyi.win32\\electrum-ganja', cmdline_name + ".exe"),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'icons/electrum.ico',
+    icon=home+'icons/electrum_ganja.ico',
     console=False)
-    # console=True makes an annoying black box pop up, but it does make Electrum output command line commands, with this turned off no output will be given but commands can still be used
+    # console=True makes an annoying black box pop up, but it does make Electrum-Ganja output command line commands, with this turned off no output will be given but commands can still be used
 
 exe_portable = EXE(
     pyz,
     a.scripts,
     a.binaries,
     a.datas + [ ('is_portable', 'README.md', 'DATA' ) ],
-    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name + "-portable.exe"),
+    name=os.path.join('build\\pyi.win32\\electrum-ganja', cmdline_name + "-portable.exe"),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'icons/electrum.ico',
+    icon=home+'icons/electrum_ganja.ico',
     console=False)
 
 #####
@@ -117,11 +118,11 @@ exe_dependent = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
-    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name),
+    name=os.path.join('build\\pyi.win32\\electrum-ganja', cmdline_name),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'icons/electrum.ico',
+    icon=home+'icons/electrum_ganja.ico',
     console=False)
 
 coll = COLLECT(
@@ -132,6 +133,6 @@ coll = COLLECT(
     strip=None,
     upx=True,
     debug=False,
-    icon=home+'icons/electrum.ico',
+    icon=home+'icons/electrum_ganja.ico',
     console=False,
-    name=os.path.join('dist', 'electrum'))
+    name=os.path.join('dist', 'electrum-ganja'))

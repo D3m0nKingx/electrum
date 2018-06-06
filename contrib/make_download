@@ -15,17 +15,17 @@ string = string.replace("##VERSION_ANDROID##", version_android)
 string = string.replace("##VERSION_APK##", version_apk)
 
 files = {
-    'tgz': "Electrum-%s.tar.gz" % version,
-    'zip': "Electrum-%s.zip" % version,
-    'mac': "electrum-%s.dmg" % version_mac,
-    'win': "electrum-%s.exe" % version_win,
-    'win_setup': "electrum-%s-setup.exe" % version_win,
-    'win_portable': "electrum-%s-portable.exe" % version_win,
+    'tgz': "Electrum-Ganja-%s.tar.gz" % version,
+    'zip': "Electrum-Ganja-%s.zip" % version,
+    'mac': "electrum-ganja-%s.dmg" % version_mac,
+    'win': "electrum-ganja-%s.exe" % version_win,
+    'win_setup': "electrum-ganja-%s-setup.exe" % version_win,
+    'win_portable': "electrum-ganja-%s-portable.exe" % version_win,
 }
 
 for k, n in files.items():
     path = "dist/%s"%n
-    link = "https://download.electrum.org/%s/%s"%(version,n)
+    link = "https://ganjacoinpro.org/%s/%s"%n
     if not os.path.exists(path):
         os.system("wget -q %s -O %s" % (link, path))
     if not os.path.getsize(path):
@@ -47,5 +47,3 @@ for k, n in files.items():
 
 with open(download_page,'w') as f:
     f.write(string)
-
-

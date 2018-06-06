@@ -13,9 +13,9 @@ echo "Clearing $here/build and $here/dist..."
 rm "$here"/build/* -rf
 rm "$here"/dist/* -rf
 
-mkdir -p /tmp/electrum-build
-mkdir -p /tmp/electrum-build/pip-cache
-export PIP_CACHE_DIR="/tmp/electrum-build/pip-cache"
+mkdir -p /tmp/electrum-ganja-build
+mkdir -p /tmp/electrum-ganja-build/pip-cache
+export PIP_CACHE_DIR="/tmp/electrum-ganja-build/pip-cache"
 
 $here/build-secp256k1.sh || exit 1
 
@@ -28,5 +28,5 @@ find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
 popd
 ls -l /opt/wine64/drive_c/python*
 
-$here/build-electrum-git.sh $to_build && \
+$here/build-electrum-ganja-git.sh $to_build && \
 echo "Done."

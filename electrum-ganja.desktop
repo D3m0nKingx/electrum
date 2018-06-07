@@ -6,14 +6,14 @@ Comment=Lightweight Ganjacoin Client
 Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\" electrum %u"
 GenericName[en_US]=Ganjacoin Wallet
 GenericName=Ganjacoin Wallet
-Icon=electrum
+Icon=electrum_ganja
 Name[en_US]=Electrum Ganjacoin Wallet
 Name=Electrum Ganjacoin Wallet
 Categories=Finance;Network;
 StartupNotify=false
 Terminal=false
 Type=Application
-MimeType=x-scheme-handler/bitcoin;
+MimeType=x-scheme-handler/ganjacoin;
 Actions=Testnet;
 
 [Desktop Action Testnet]

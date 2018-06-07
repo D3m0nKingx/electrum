@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Ganjacoin client
 # Copyright (C) 2018 The Electrum developers
 #
 # Permission is hereby granted, free of charge, to any person
@@ -37,14 +37,14 @@ def read_json(filename, default):
     return r
 
 
-class BitcoinMainnet:
+class GanjacoinMainnet:
 
     TESTNET = False
     WIF_PREFIX = 0x80
-    ADDRTYPE_P2PKH = 0
-    ADDRTYPE_P2SH = 5
+    ADDRTYPE_P2PKH = 103
+    ADDRTYPE_P2SH = 39
     SEGWIT_HRP = "bc"
-    GENESIS = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+    GENESIS = "0000ec9d4f2f1b94c0b870aa4fa4d950b5301274451d9d0346d21a18f2e99e5f"
     DEFAULT_PORTS = {'t': '50001', 's': '50002'}
     DEFAULT_SERVERS = read_json('servers.json', {})
     CHECKPOINTS = read_json('checkpoints.json', [])
@@ -65,14 +65,14 @@ class BitcoinMainnet:
     }
 
 
-class BitcoinTestnet:
+class GanjacoinTestnet:
 
     TESTNET = True
     WIF_PREFIX = 0xef
-    ADDRTYPE_P2PKH = 111
-    ADDRTYPE_P2SH = 196
+    ADDRTYPE_P2PKH = 28
+    ADDRTYPE_P2SH = 38
     SEGWIT_HRP = "tb"
-    GENESIS = "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
+    GENESIS = "0000dce8b265fbf203ffd5ee0f2e4d222b2bfedaed708890dae219b5ea8a6de3"
     DEFAULT_PORTS = {'t': '51001', 's': '51002'}
     DEFAULT_SERVERS = read_json('servers_testnet.json', {})
     CHECKPOINTS = read_json('checkpoints_testnet.json', [])
@@ -93,7 +93,7 @@ class BitcoinTestnet:
     }
 
 
-class BitcoinRegtest(BitcoinTestnet):
+class GanjacoinRegtest(GanjacoinTestnet):
 
     SEGWIT_HRP = "bcrt"
     GENESIS = "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"
@@ -102,19 +102,19 @@ class BitcoinRegtest(BitcoinTestnet):
 
 
 # don't import net directly, import the module instead (so that net is singleton)
-net = BitcoinMainnet
+net = GanjacoinMainnet
 
 
 def set_mainnet():
     global net
-    net = BitcoinMainnet
+    net = GanjacoinMainnet
 
 
 def set_testnet():
     global net
-    net = BitcoinTestnet
+    net = GanjacoinTestnet
 
 
 def set_regtest():
     global net
-    net = BitcoinRegtest
+    net = GanjacoinRegtest

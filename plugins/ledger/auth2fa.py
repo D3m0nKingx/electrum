@@ -13,11 +13,11 @@ from PyQt5.QtWidgets import *
 
 from btchip.btchip import *
 
-from electrum.i18n import _
-from electrum_gui.qt.util import *
-from electrum.util import print_msg
-from electrum import constants, bitcoin
-from electrum_gui.qt.qrcodewidget import QRCodeWidget
+from electrum_ganja.i18n import _
+from electrum_ganja_gui.qt.util import *
+from electrum_ganja.util import print_msg
+from electrum_ganja import constants, ganja
+from electrum_ganja_gui.qt.qrcodewidget import QRCodeWidget
 
 
 DEBUG = False
@@ -51,14 +51,14 @@ class LedgerAuthDialog(QDialog):
         self.dongle = self.handler.win.wallet.get_keystore().get_client().dongle
         self.ws = None
         self.pin = ''
-        
+
         self.devmode = self.getDevice2FAMode()
         if self.devmode == 0x11 or self.txdata['confirmationType'] == 1:
             self.cfg['mode'] = 0
-        
+
         vbox = QVBoxLayout()
         self.setLayout(vbox)
-        
+
         def on_change_mode(idx):
             if idx < 2 and self.ws:
                 self.ws.stop()
@@ -131,13 +131,13 @@ class LedgerAuthDialog(QDialog):
                     text = addr[:i] + '<u><b>' + addr[i:i+1] + '</u></b>' + addr[i+1:]
                 else:
                     # pin needs to be created from mainnet address
-                    addr_mainnet = bitcoin.script_to_address(bitcoin.address_to_script(addr), net=constants.BitcoinMainnet)
+                    addr_mainnet = ganja.script_to_address(ganja.address_to_script(addr), net=constants.GanjacoinMainnet)
                     addr_mainnet = addr_mainnet[:i] + '<u><b>' + addr_mainnet[i:i+1] + '</u></b>' + addr_mainnet[i+1:]
                     text = str(addr) + '\n' + str(addr_mainnet)
                 self.addrtext.setHtml(str(text))
             else:
                 self.addrtext.setHtml(_("Press Enter"))
-                
+
         pin_changed('')    
         cardpin = QHBoxLayout()
         cardpin.addWidget(QLabel(_("Enter PIN:")))
@@ -152,7 +152,7 @@ class LedgerAuthDialog(QDialog):
         card.addLayout(cardpin)
         self.cardbox.setVisible(self.cfg['mode'] == 1)
         vbox.addWidget(self.cardbox)
-        
+
         self.pairbox = QWidget()
         pairlayout = QVBoxLayout()
         self.pairbox.setLayout(pairlayout)
@@ -168,7 +168,7 @@ class LedgerAuthDialog(QDialog):
         
         if self.cfg['mode'] > 1 and not self.ws:
             self.req_validation()
-        
+
     def populate_modes(self):
         self.modes.blockSignals(True)
         self.modes.clear()
@@ -180,7 +180,7 @@ class LedgerAuthDialog(QDialog):
             else:
                 self.modes.addItem(_("Mobile - {}").format(self.cfg['pair'][1]))
         self.modes.blockSignals(False)
-        
+
     def update_dlg(self):
         self.modes.setCurrentIndex(self.cfg['mode'])
         self.modebox.setVisible(True)
@@ -210,7 +210,7 @@ class LedgerAuthDialog(QDialog):
         self.ws = LedgerWebSocket(self, pairID)
         self.ws.pairing_done.connect(self.pairing_done)
         self.ws.start() 
-               
+
     def pairing_done(self, data):
         if data is not None:
             self.cfg['pair'] = [ data['pairid'], data['name'], data['platform'] ]
@@ -219,7 +219,7 @@ class LedgerAuthDialog(QDialog):
             self.handler.win.wallet.save_keystore()
         self.pin = 'paired'
         self.accept()
-    
+
     def req_validation(self):
         if self.cfg['pair'] and 'secureScreenData' in self.txdata:
             if self.ws:
@@ -227,14 +227,14 @@ class LedgerAuthDialog(QDialog):
             self.ws = LedgerWebSocket(self, self.cfg['pair'][0], self.txdata)
             self.ws.req_updated.connect(self.req_updated)
             self.ws.start()
-              
+
     def req_updated(self, pin):
         if pin == 'accepted':
             self.helpmsg.setText(helpTxt[3])
         else:
             self.pin = str(pin)
             self.accept()
-        
+
     def getDevice2FAMode(self):
         apdu = [0xe0, 0x24, 0x01, 0x00, 0x00, 0x01] # get 2fa mode
         try:
@@ -243,7 +243,7 @@ class LedgerAuthDialog(QDialog):
         except BTChipException as e:
             debug_msg('Device getMode Failed')
         return 0x11
-    
+
     def closeEvent(self, evnt):
         debug_msg("CLOSE - Stop WS")
         if self.ws:
@@ -255,7 +255,7 @@ class LedgerAuthDialog(QDialog):
 class LedgerWebSocket(QThread):
     pairing_done = pyqtSignal(object)
     req_updated = pyqtSignal(str)
-    
+
     def __init__(self, dlg, pairID, txdata=None):
         QThread.__init__(self)
         self.stopping = False
@@ -264,13 +264,13 @@ class LedgerWebSocket(QThread):
         self.dlg = dlg
         self.dongle = self.dlg.dongle
         self.data = None
-             
+
         #websocket.enableTrace(True)
         logging.basicConfig(level=logging.INFO)
         self.ws = websocket.WebSocketApp('wss://ws.ledgerwallet.com/2fa/channels', 
                                 on_message = self.on_message, on_error = self.on_error,
                                 on_close = self.on_close, on_open = self.on_open)
-                                
+
     def run(self):
         while not self.stopping:
             self.ws.run_forever()
@@ -291,7 +291,7 @@ class LedgerWebSocket(QThread):
                 self.data = data
             except BTChipException as e:
                 debug_msg('Identify Failed')
-                
+
         if data['type'] == 'challenge':
             debug_msg('Challenge')
             apdu = [0xe0, 0x12, 0x02, 0x00, 0x10] # confirm pairing
@@ -309,7 +309,7 @@ class LedgerWebSocket(QThread):
             ws.send( '{"type":"disconnect"}' )
             self.stopping = True
             ws.close()
-        
+
         if data['type'] == 'accept':
             debug_msg('Accepted')
             self.req_updated.emit('accepted')
@@ -319,7 +319,7 @@ class LedgerWebSocket(QThread):
             self.txreq = None
             self.stopping = True
             ws.close()
-            
+
         if data['type'] == 'repeat':
             debug_msg('Repeat')
             if self.txreq:
@@ -333,16 +333,16 @@ class LedgerWebSocket(QThread):
         if data['type'] == 'disconnect':
             debug_msg('Disconnected')
             ws.close()
-            
+
     def on_error(self, ws, error):
         message = getattr(error, 'strerror', '')
         if not message:
             message = getattr(error, 'message', '')
         debug_msg("WS: %s" % message)
-    
+
     def on_close(self, ws):
         debug_msg("WS: ### socket closed ###")
-    
+
     def on_open(self, ws):
         debug_msg("WS: ### socket open ###")
         debug_msg("Joining with pairing ID", self.pairID)
@@ -355,4 +355,4 @@ class LedgerWebSocket(QThread):
 
 def debug_msg(*args):
     if DEBUG:
-        print_msg(*args)        
+        print_msg(*args)

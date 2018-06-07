@@ -2,8 +2,8 @@ import base64
 import unittest
 import sys
 
-from lib import ganja
-from lib.ganja import (
+from lib import bitcoin
+from lib.bitcoin import (
     public_key_to_p2pkh,
     bip32_root, bip32_public_derivation, bip32_private_derivation,
     Hash, address_from_private_key,

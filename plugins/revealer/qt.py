@@ -1,16 +1,16 @@
 '''
 
-Revealer 
+Revealer
 So you have something to hide?
 
-plug-in for the electrum wallet.
+plug-in for the electrum-ganja wallet.
 
 Features:
     - Deep Cold multi-factor backup solution
     - Safety - One time pad security
     - Redundancy - Trustless printing & distribution
     - Encrypt your seedphrase or any secret you want for your revealer
-    - Based on crypto by legendary cryptographers Naor and Shamir  
+    - Based on crypto by legendary cryptographers Naor and Shamir
 
 Tiago Romagnani Silveira, 2017
 
@@ -24,18 +24,18 @@ from hashlib import sha256
 
 from PyQt5.QtPrintSupport import QPrinter
 
-from electrum.plugins import BasePlugin, hook
-from electrum.i18n import _
-from electrum_gui.qt.util import *
-from electrum_gui.qt.qrtextedit import ScanQRTextEdit
-from electrum.util import to_bytes, make_dir
+from electrum_ganja.plugins import BasePlugin, hook
+from electrum_ganja.i18n import _
+from electrum_ganja_gui.qt.util import *
+from electrum_ganja_gui.qt.qrtextedit import ScanQRTextEdit
+from electrum_ganja.util import to_bytes, make_dir
 
 
 class Plugin(BasePlugin):
 
     def __init__(self, parent, config, name):
         BasePlugin.__init__(self, parent, config, name)
-        self.base_dir = config.electrum_path()+'/revealer/'
+        self.base_dir = config.electrum_ganja_path()+'/revealer/'
 
         if self.config.get('calibration_h') == None:
             self.config.set_key('calibration_h', 0)
@@ -520,18 +520,18 @@ class Plugin(BasePlugin):
                 painter.drawLine(base_img.width()-(dist_h), 0,  base_img.width()-(dist_h), base_img.height())
 
                 painter.drawImage(((total_distance_h))+11, ((total_distance_h))+11,
-                                  QImage(':icons/electrumb.png').scaledToWidth(2.1*(total_distance_h), Qt.SmoothTransformation))
+                                  QImage(':icons/electrum_ganjab.png').scaledToWidth(2.1*(total_distance_h), Qt.SmoothTransformation))
 
                 painter.setPen(QPen(Qt.white, border_thick*8))
-                painter.drawLine(base_img.width()-((total_distance_h))-(border_thick*8)/2-(border_thick/2)-2, 
-                                (base_img.height()-((total_distance_h)))-((border_thick*8)/2)-(border_thick/2)-2, 
+                painter.drawLine(base_img.width()-((total_distance_h))-(border_thick*8)/2-(border_thick/2)-2,
+                                (base_img.height()-((total_distance_h)))-((border_thick*8)/2)-(border_thick/2)-2,
                                 base_img.width()-((total_distance_h))-(border_thick*8)/2-(border_thick/2)-2 - 77,
                                 (base_img.height()-((total_distance_h)))-((border_thick*8)/2)-(border_thick/2)-2)
                 painter.setPen(QColor(0,0,0,255))
                 painter.drawText(QRect(0, base_img.height()-107, base_img.width()-total_distance_h - border_thick - 11,
                                        base_img.height()-total_distance_h - border_thick), Qt.AlignRight, self.version + '_'+self.code_id)
                 painter.end()
-                    
+
             else: # revealer
 
                 painter.setPen(QPen(border_color, 17))

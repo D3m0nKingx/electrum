@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - Lightweight Bitcoin Client
+# Electrum-Ganja - Lightweight Ganjacoin Client
 # Copyright (C) 2015 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -32,13 +33,13 @@ from decimal import Decimal
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-from electrum_gui.qt.util import *
-from electrum_gui.qt.qrcodewidget import QRCodeWidget
-from electrum_gui.qt.amountedit import AmountEdit
-from electrum_gui.qt.main_window import StatusBarButton
-from electrum.i18n import _
-from electrum.plugins import hook
-from electrum.util import PrintError
+from electrum_ganja_gui.qt.util import *
+from electrum_ganja_gui.qt.qrcodewidget import QRCodeWidget
+from electrum_ganja_gui.qt.amountedit import AmountEdit
+from electrum_ganja_gui.qt.main_window import StatusBarButton
+from electrum_ganja.i18n import _
+from electrum_ganja.plugins import hook
+from electrum_ganja.util import PrintError
 from .trustedcoin import TrustedCoinPlugin, server
 
 
@@ -209,7 +210,7 @@ class Plugin(TrustedCoinPlugin):
         if window.pluginsdialog:
             window.pluginsdialog.close()
         wallet = window.wallet
-        uri = "bitcoin:" + wallet.billing_info['billing_address'] + "?message=TrustedCoin %d Prepaid Transactions&amount="%k + str(Decimal(v)/100000000)
+        uri = "ganjacoin:" + wallet.billing_info['billing_address'] + "?message=TrustedCoin %d Prepaid Transactions&amount="%k + str(Decimal(v)/100000000)
         wallet.is_billing = True
         window.pay_to_URI(uri)
         window.payto_e.setFrozen(True)
@@ -315,5 +316,3 @@ class Plugin(TrustedCoinPlugin):
         window.exec_layout(vbox, next_enabled=False,
                                raise_on_cancel=False)
         return pw.get_amount(), cb_lost.isChecked()
-
-

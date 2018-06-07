@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - Lightweight Bitcoin Client
+# Electrum-Ganja - Lightweight Ganjacoin Client
 # Copyright (C) 2015 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -30,18 +31,18 @@ import json
 from urllib.parse import urljoin
 from urllib.parse import quote
 
-import electrum
-from electrum import bitcoin, ecc
-from electrum import constants
-from electrum import keystore
-from electrum.bitcoin import *
-from electrum.mnemonic import Mnemonic
-from electrum import version
-from electrum.wallet import Multisig_Wallet, Deterministic_Wallet
-from electrum.i18n import _
-from electrum.plugins import BasePlugin, hook
-from electrum.util import NotEnoughFunds
-from electrum.storage import STO_EV_USER_PW
+import electrum_ganja as electrum
+from electrum_ganja import ganja, ecc
+from electrum_ganja import constants
+from electrum_ganja import keystore
+from electrum_ganja.ganja import *
+from electrum_ganja.mnemonic import Mnemonic
+from electrum_ganja import version
+from electrum_ganja.wallet import Multisig_Wallet, Deterministic_Wallet
+from electrum_ganja.i18n import _
+from electrum_ganja.plugins import BasePlugin, hook
+from electrum_ganja.util import NotEnoughFunds
+from electrum_ganja.storage import STO_EV_USER_PW
 
 # signing_xpub is hardcoded so that the wallet can be restored from seed, without TrustedCoin's server
 def get_signing_xpub():
@@ -123,7 +124,7 @@ class TrustedCoinCosignerClient(object):
         else:
             return response.text
 
-    def get_terms_of_service(self, billing_plan='electrum-per-tx-otp'):
+    def get_terms_of_service(self, billing_plan='electrum-ganja-per-tx-otp'):
         """
         Returns the TOS for the given billing plan as a plain/text unicode string.
         :param billing_plan: the plan to return the terms for
@@ -131,7 +132,7 @@ class TrustedCoinCosignerClient(object):
         payload = {'billing_plan': billing_plan}
         return self.send_request('get', 'tos', payload)
 
-    def create(self, xpubkey1, xpubkey2, email, billing_plan='electrum-per-tx-otp'):
+    def create(self, xpubkey1, xpubkey2, email, billing_plan='electrum-ganja-per-tx-otp'):
         """
         Creates a new cosigner resource.
         :param xpubkey1: a bip32 extended public key (customarily the hot key)
@@ -204,7 +205,7 @@ class TrustedCoinCosignerClient(object):
         return self.send_request('post', relative_url, payload, headers)
 
 
-server = TrustedCoinCosignerClient(user_agent="Electrum/" + version.ELECTRUM_VERSION)
+server = TrustedCoinCosignerClient(user_agent="Electrum-Ganja/" + version.ELECTRUM_GANJA_VERSION)
 
 class Wallet_2fa(Multisig_Wallet):
 
@@ -294,7 +295,7 @@ class Wallet_2fa(Multisig_Wallet):
 
 def get_user_id(storage):
     def make_long_id(xpub_hot, xpub_cold):
-        return bitcoin.sha256(''.join(sorted([xpub_hot, xpub_cold])))
+        return ganja.sha256(''.join(sorted([xpub_hot, xpub_cold])))
     xpub1 = storage.get('x1/')['xpub']
     xpub2 = storage.get('x2/')['xpub']
     long_id = make_long_id(xpub1, xpub2)
@@ -303,15 +304,15 @@ def get_user_id(storage):
 
 def make_xpub(xpub, s):
     version, _, _, _, c, cK = deserialize_xpub(xpub)
-    cK2, c2 = bitcoin._CKD_pub(cK, c, s)
-    return bitcoin.serialize_xpub(version, c2, cK2)
+    cK2, c2 = ganja._CKD_pub(cK, c, s)
+    return ganja.serialize_xpub(version, c2, cK2)
 
 def make_billing_address(wallet, num):
     long_id, short_id = wallet.get_user_id()
     xpub = make_xpub(get_billing_xpub(), long_id)
     version, _, _, _, c, cK = deserialize_xpub(xpub)
-    cK, c = bitcoin.CKD_pub(cK, c, num)
-    return bitcoin.public_key_to_p2pkh(cK)
+    cK, c = ganja.CKD_pub(cK, c, num)
+    return ganja.public_key_to_p2pkh(cK)
 
 
 class TrustedCoinPlugin(BasePlugin):
@@ -324,7 +325,7 @@ class TrustedCoinPlugin(BasePlugin):
 
     @staticmethod
     def is_valid_seed(seed):
-        return bitcoin.is_new_seed(seed, SEED_PREFIX)
+        return ganja.is_new_seed(seed, SEED_PREFIX)
 
     def is_available(self):
         return True
@@ -409,8 +410,8 @@ class TrustedCoinPlugin(BasePlugin):
 
     @classmethod
     def get_xkeys(self, seed, passphrase, derivation):
-        from electrum.mnemonic import Mnemonic
-        from electrum.keystore import bip32_root, bip32_private_derivation
+        from electrum_ganja.mnemonic import Mnemonic
+        from electrum_ganja.keystore import bip32_root, bip32_private_derivation
         bip32_seed = Mnemonic.mnemonic_to_seed(seed, passphrase)
         xprv, xpub = bip32_root(bip32_seed, 'standard')
         xprv, xpub = bip32_private_derivation(xprv, "m/", derivation)
@@ -456,7 +457,7 @@ class TrustedCoinPlugin(BasePlugin):
               "your wallet.  If you generated your seed on an offline "
               'computer, click on "{}" to close this window, move your '
               "wallet file to an online computer, and reopen it with "
-              "Electrum.").format(_('Cancel')),
+              "Electrum-Ganja.").format(_('Cancel')),
             _('If you are online, click on "{}" to continue.').format(_('Next'))
         ]
         msg = '\n\n'.join(msg)

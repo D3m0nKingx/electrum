@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2014 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -30,14 +31,14 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QPushButton
 
-from electrum import bitcoin, util, keystore, ecc
-from electrum import transaction
-from electrum.plugins import BasePlugin, hook
-from electrum.i18n import _
-from electrum.wallet import Multisig_Wallet
-from electrum.util import bh2u, bfh
+from electrum_ganja import ganja, util, keystore, ecc
+from electrum_ganja import transaction
+from electrum_ganja.plugins import BasePlugin, hook
+from electrum_ganja.i18n import _
+from electrum_ganja.wallet import Multisig_Wallet
+from electrum_ganja.util import bh2u, bfh
 
-from electrum_gui.qt.transaction_dialog import show_transaction
+from electrum_ganja_gui.qt.transaction_dialog import show_transaction
 
 import sys
 import traceback
@@ -131,8 +132,8 @@ class Plugin(BasePlugin):
         self.cosigner_list = []
         for key, keystore in wallet.keystores.items():
             xpub = keystore.get_master_public_key()
-            K = bitcoin.deserialize_xpub(xpub)[-1]
-            _hash = bh2u(bitcoin.Hash(K))
+            K = ganja.deserialize_xpub(xpub)[-1]
+            _hash = bh2u(ganja.Hash(K))
             if not keystore.is_watching_only():
                 self.keys.append((key, _hash, window))
             else:
@@ -160,7 +161,7 @@ class Plugin(BasePlugin):
             d.cosigner_send_button.hide()
 
     def cosigner_can_sign(self, tx, cosigner_xpub):
-        from electrum.keystore import is_xpubkey, parse_xpubkey
+        from electrum_ganja.keystore import is_xpubkey, parse_xpubkey
         xpub_set = set([])
         for txin in tx.inputs():
             for x_pubkey in txin['x_pubkeys']:
@@ -215,7 +216,7 @@ class Plugin(BasePlugin):
         if not xprv:
             return
         try:
-            k = bitcoin.deserialize_xprv(xprv)[-1]
+            k = ganja.deserialize_xprv(xprv)[-1]
             EC = ecc.ECPrivkey(k)
             message = bh2u(EC.decrypt_message(message))
         except Exception as e:

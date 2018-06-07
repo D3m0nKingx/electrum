@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- mode: python -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2016  The Electrum developers
 #
 # Permission is hereby granted, free of charge, to any person
@@ -27,11 +27,11 @@
 import threading
 
 from PyQt5.Qt import QVBoxLayout, QLabel
-from electrum_gui.qt.password_dialog import PasswordDialog, PW_PASSPHRASE
-from electrum_gui.qt.util import *
+from electrum_ganja_gui.qt.password_dialog import PasswordDialog, PW_PASSPHRASE
+from electrum_ganja_gui.qt.util import *
 
-from electrum.i18n import _
-from electrum.util import PrintError
+from electrum_ganja.i18n import _
+from electrum_ganja.util import PrintError
 
 # The trickiest thing about this handler was getting windows properly
 # parented on macOS.
@@ -177,9 +177,9 @@ class QtHandlerBase(QObject, PrintError):
 
 
 
-from electrum.plugins import hook
-from electrum.util import UserCancelled
-from electrum_gui.qt.main_window import StatusBarButton
+from electrum_ganja.plugins import hook
+from electrum_ganja.util import UserCancelled
+from electrum_ganja_gui.qt.main_window import StatusBarButton
 
 class QtPluginBase(object):
 

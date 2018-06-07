@@ -1,10 +1,9 @@
 import time
 from struct import pack
-
-from electrum.i18n import _
-from electrum.util import PrintError, UserCancelled
-from electrum.keystore import bip39_normalize_passphrase
-from electrum.bitcoin import serialize_xpub
+from electrum_ganja.i18n import _
+from electrum_ganja.util import PrintError, UserCancelled
+from electrum_ganja.keystore import bip39_normalize_passphrase
+from electrum_ganja.ganja import serialize_xpub
 
 
 class GuiMixin(object):
@@ -67,7 +66,7 @@ class GuiMixin(object):
             msg = _("Enter a passphrase to generate this wallet.  Each time "
                     "you use this wallet your {} will prompt you for the "
                     "passphrase.  If you forget the passphrase you cannot "
-                    "access the bitcoins in the wallet.").format(self.device)
+                    "access the Ganjacoins in the wallet.").format(self.device)
         else:
             msg = _("Enter the passphrase to unlock this wallet:")
         passphrase = self.handler.get_passphrase(msg, self.creating_wallet)
@@ -132,8 +131,8 @@ class TrezorClientBase(GuiMixin, PrintError):
 
     def has_usable_connection_with_device(self):
         try:
-            res = self.ping("electrum pinging device")
-            assert res == "electrum pinging device"
+            res = self.ping("electrum-ganja pinging device")
+            assert res == "electrum-ganja pinging device"
         except BaseException:
             return False
         return True

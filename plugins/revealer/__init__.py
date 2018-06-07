@@ -1,4 +1,4 @@
-from electrum.i18n import _
+from electrum_ganja.i18n import _
 
 fullname = _('Revealer')
 description = ''.join(["<br/>",
@@ -10,7 +10,7 @@ description = ''.join(["<br/>",
     _("Once activated you can access the plug-in through the icon at the seed dialog."), '<br/>', '<br/>',
     _("For more information, visit"),
     " <a href=\"https://revealer.cc\">https://revealer.cc</a>", '<br/>', '<br/>',
-    
+
 ])
 available_for = ['qt']
 

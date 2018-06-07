@@ -2,15 +2,15 @@ from binascii import hexlify, unhexlify
 import traceback
 import sys
 
-from electrum.util import bfh, bh2u, versiontuple, UserCancelled
-from electrum.bitcoin import (b58_address_to_hash160, xpub_from_pubkey,
+from electrum_ganja.util import bfh, bh2u, versiontuple, UserCancelled
+from electrum_ganja.ganja import (b58_address_to_hash160, xpub_from_pubkey,
                               TYPE_ADDRESS, TYPE_SCRIPT, is_address)
-from electrum import constants
-from electrum.i18n import _
-from electrum.plugins import BasePlugin, Device
-from electrum.transaction import deserialize, Transaction
-from electrum.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey, xtype_from_derivation
-from electrum.base_wizard import ScriptTypeNotSupported
+from electrum_ganja import constants
+from electrum_ganja.i18n import _
+from electrum_ganja.plugins import BasePlugin, Device
+from electrum_ganja.transaction import deserialize, Transaction
+from electrum_ganja.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey, xtype_from_derivation
+from electrum_ganja.base_wizard import ScriptTypeNotSupported
 
 from ..hw_wallet import HW_PluginBase
 
@@ -174,7 +174,7 @@ class TrezorPlugin(HW_PluginBase):
         return client
 
     def get_coin_name(self):
-        return "Testnet" if constants.net.TESTNET else "Bitcoin"
+        return "Testnet" if constants.net.TESTNET else "Ganjacoin"
 
     def initialize_device(self, device_id, wizard, handler):
         # Initialization method
@@ -496,7 +496,7 @@ class TrezorPlugin(HW_PluginBase):
 
         return outputs
 
-    def electrum_tx_to_txtype(self, tx):
+    def electrum_ganja_tx_to_txtype(self, tx):
         t = self.types.TransactionType()
         if tx is None:
             # probably for segwit input and we don't need this prev txn
@@ -515,4 +515,4 @@ class TrezorPlugin(HW_PluginBase):
     # This function is called from the TREZOR libraries (via tx_api)
     def get_tx(self, tx_hash):
         tx = self.prev_tx[tx_hash]
-        return self.electrum_tx_to_txtype(tx)
+        return self.electrum_ganja_tx_to_txtype(tx)

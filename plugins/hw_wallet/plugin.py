@@ -1,8 +1,9 @@
 #!/usr/bin/env python2
 # -*- mode: python -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum-Ganja - lightweight Ganjacoin client
 # Copyright (C) 2016  The Electrum developers
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -24,9 +25,9 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from electrum.plugins import BasePlugin, hook
-from electrum.i18n import _
-from electrum.bitcoin import is_address
+from electrum_ganja.plugins import BasePlugin, hook
+from electrum_ganja.i18n import _
+from electrum_ganja.ganja import is_address
 
 
 class HW_PluginBase(BasePlugin):
@@ -67,10 +68,10 @@ class HW_PluginBase(BasePlugin):
         if keystore is None:
             keystore = wallet.get_keystore()
         if not is_address(address):
-            keystore.handler.show_error(_('Invalid Bitcoin Address'))
+            keystore.handler.show_error(_('Invalid Ganjacoin Address'))
             return False
         if not wallet.is_mine(address):
-            keystore.handler.show_error(_('Address not in wallet.'))
+            keystore.handler.show_error(_('Address is not in wallet.'))
             return False
         if type(keystore) != self.keystore_class:
             return False

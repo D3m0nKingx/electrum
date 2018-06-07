@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Electrum - Lightweight Bitcoin Client
+# Electrum-Ganja - Lightweight Ganjacoin Client
 # Copyright (C) 2015 Thomas Voegtlin
+# Copyright (C) 2018 GanjaProject
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -23,8 +24,8 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from electrum.i18n import _
-from electrum.plugins import hook
+from electrum_ganja.i18n import _
+from electrum_ganja.plugins import hook
 from .trustedcoin import TrustedCoinPlugin
 
 

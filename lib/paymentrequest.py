@@ -75,12 +75,12 @@ def get_payment_request(url):
     u = urllib.parse.urlparse(url)
     error = None
     if u.scheme in ['http', 'https']:
-	response = requests.request('GET', url, headers=REQUEST_HEADERS)
-	data = response.content
-	print_error('fetched payment request', url, len(data))
+        response = requests.request('GET', url, headers=REQUEST_HEADERS)
+        data = response.content
+        print_error('fetched payment request', url, len(data))
     elif u.scheme == 'file':
-	with open(u.path, 'r') as f:
-		data = f.read()
+        with open(u.path, 'r') as f:
+            data = f.read()
     else:
         raise Exception("unknown scheme", url)
     pr = PaymentRequest(data)
@@ -94,7 +94,7 @@ class PaymentRequest:
         self.parse(data)
         self.requestor = None # known after verify
         self.tx = None
-	self.error = None
+        self.error = None
 
     def __str__(self):
         return self.raw

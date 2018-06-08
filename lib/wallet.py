@@ -2009,11 +2009,11 @@ class Imported_Wallet(Simple_Wallet):
         return self.addresses[address].get('pubkey')
 
     def get_pubkey_index(self, pubkey):
-	if pubkey in self.receiving_pubkeys:
-		return False, self.receiving_pubkeys.index(pubkey)
-	if pubkey in self.change_pubkeys:
-		return True, self.change_pubkeys.index(pubkey)
-	raise BaseException('pubkey not found')
+	    if pubkey in self.receiving_pubkeys:
+		    return False, self.receiving_pubkeys.index(pubkey)
+	    if pubkey in self.change_pubkeys:
+		    return True, self.change_pubkeys.index(pubkey)
+	    raise BaseException('pubkey not found')
 
     def import_private_key(self, sec, pw, redeem_script=None):
         try:

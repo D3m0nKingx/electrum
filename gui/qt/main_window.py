@@ -86,7 +86,7 @@ class StatusBarButton(QPushButton):
 from electrum_ganja.paymentrequest import PR_PAID
 
 
-class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
+class Electrum_GanjaWindow(QMainWindow, MessageBoxMixin, PrintError):
 
     payment_request_ok_signal = pyqtSignal()
     payment_request_error_signal = pyqtSignal()

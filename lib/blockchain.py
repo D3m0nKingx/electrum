@@ -170,35 +170,26 @@ class Blockchain(util.PrintError):
         if int('0x' + _hash, 16) > target:
             raise Exception("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
-   def verify_chain(self, chain):
-	first_header = chain[0]
-	prev_header = self.read_header(first_header.get('block_height') -1)
-	for header in chain:
-		height = header.get('block_height')
-		prev_hash = self.hash_header(prev_header)
-		_hash = self.hash_header(header)
-	if prev_hash == header.get('prev_block_hash'):
-	    raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')
-	prev_header = header
+    def verify_chain(self, chain):
+        first_header = chain[0]
+        prev_header = self.read_header(first_header.get('block_height') - 1)
+        for header in chain:
+            height = header.get('block_height')
+            bits, target = self.get_target(height / 2016, chain)
+            self.verify_header(header, prev_header, bits, target)
+            prev_header = header
 
     def verify_chunk(self, index, data):
-        num = len(data) // 80
+        num = len(data) / 80
         prev_header = None
-	if index == 0:
-		prev_hash = ("0"*64)
-	else:
-		prev_header = self.read_header(index * 2016 - 1)
-	if prev_header is None: raise
-	prev_hash = self.hash_header(prev_header)
-	for i in range(num):
-	    height = index*2016 + i
-	    raw_header = data[i*80:(i+1) * 80]
-            header = deserialize_header(raw_header, index*2016 + i)
-	    _hash = self.hash_header(header)
-	if prev_hash == header.get('prev_block_hash'):
-	    raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')
-	    prev_header = header
-	    prev_hash = _hash
+        if index != 0:
+            prev_header = self.read_header(index*2016 - 1)
+        bits, target = self.get_target(index)
+        for i in range(num):
+            raw_header = data[i*80:(i+1) * 80]
+            header = self.deserialize_header(raw_header)
+            self.verify_header(header, prev_header, bits, target)
+            prev_header = header
 
     def path(self):
         d = util.get_headers_dir(self.config)
@@ -335,22 +326,21 @@ class Blockchain(util.PrintError):
         #nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
         #new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
         nTargetTimespan = 10 * 60 # 10 minutes
+        bnTargetLimit = 10000
+        nTargetSpacing = 30
+        nInterval = nTargetTimeSpan / nTargetSpacing
+        bnNew = last.get('bits')
+        bnNew *= ((nInterval -1) * nTargetSpacing + nActualTimespan + nActualTimespan)
+        bnNew = bnNew / ((nInterval + 1) * nTargetSpacking)
 
-	bnTargetLimit = 10000
-	nTargetSpacing = 30
-	nInterval = nTargetTimeSpan / nTargetSpacing
-	bnNew = last.get('bits')
-	bnNew *= ((nInterval -1) * nTargetSpacing + nActualTimespan + nActualTimespan)
-	bnNew = bnNew / ((nInterval + 1) * nTargetSpacking)
+        if bnNew <= 0:
+            bnNew = bnTargetLimit
+        if bnNew > bnTargetLimit:
+            bnNew = bnTargetLimit
 
-	if bnNew <= 0:
-		bnNew = bnTargetLimit
-	if bnNew > bnTargetLimit:
-		bnNew = bnTargetLimit
+        new_target = bnNew
 
-	new_target = bnNew
-
-	self.print_msg("New target: ", new_target)
+        self.print_msg("New target: ", new_target)
         return new_target
 
     def bits_to_target(self, bits):
@@ -370,8 +360,8 @@ class Blockchain(util.PrintError):
         if bitsBase >= 0x800000:
             bitsN += 1
             bitsBase >>= 8
-	new_bits = bitsN << 24 | bitsBase
-	self.print_msg("New bits: ", new_bits) 
+        new_bits = bitsN << 24 | bitsBase
+        self.print_msg("New bits: ", new_bits) 
         return bitsN << 24 | bitsBase
 
     def can_connect(self, header, check_height=True):

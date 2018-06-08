@@ -3,7 +3,7 @@ include README.rst
 include electrum-ganja.conf.sample
 include electrum-ganja.desktop
 include *.py
-include electrum
+include electrum-ganja
 include contrib/requirements/requirements.txt
 include contrib/requirements/requirements-hw.txt
 recursive-include lib *.py

@@ -18,7 +18,7 @@ with open('contrib/requirements/requirements-hw.txt') as f:
 version = imp.load_source('version', 'lib/version.py')
 
 if sys.version_info[:3] < (3, 4, 0):
-    sys.exit("Error: Electrum requires Python version >= 3.4.0...")
+    sys.exit("Error: Electrum-Ganja requires Python version >= 3.4.0...")
 
 data_files = []
 
@@ -36,7 +36,7 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
         else:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
-        (os.path.join(usr_share, 'applications/'), ['electrum.desktop']),
+        (os.path.join(usr_share, 'applications/'), ['electrum-ganja.desktop']),
         (os.path.join(usr_share, icons_dirname), ['icons/electrum_ganja.png'])
     ]
 
@@ -48,35 +48,35 @@ extras_require['full'] = extras_require['hardware'] + extras_require['fast']
 
 
 setup(
-    name="Electrum",
-    version=version.ELECTRUM_VERSION,
+    name="Electrum-Ganja",
+    version=version.ELECTRUM_GANJA_VERSION,
     install_requires=requirements,
     extras_require=extras_require,
     packages=[
-        'electrum',
-        'electrum_gui',
-        'electrum_gui.qt',
-        'electrum_plugins',
-        'electrum_plugins.audio_modem',
-        'electrum_plugins.cosigner_pool',
-        'electrum_plugins.email_requests',
-        'electrum_plugins.greenaddress_instant',
-        'electrum_plugins.hw_wallet',
-        'electrum_plugins.keepkey',
-        'electrum_plugins.labels',
-        'electrum_plugins.ledger',
-        'electrum_plugins.trezor',
-        'electrum_plugins.digitalbitbox',
-        'electrum_plugins.trustedcoin',
-        'electrum_plugins.virtualkeyboard',
+        'electrum_ganja',
+        'electrum_ganja_gui',
+        'electrum_ganja_gui.qt',
+        'electrum_ganja_plugins',
+        'electrum_ganja_plugins.audio_modem',
+        'electrum_ganja_plugins.cosigner_pool',
+        'electrum_ganja_plugins.email_requests',
+        'electrum_ganja_plugins.greenaddress_instant',
+        'electrum_ganja_plugins.hw_wallet',
+        'electrum_ganja_plugins.keepkey',
+        'electrum_ganja_plugins.labels',
+        'electrum_ganja_plugins.ledger',
+        'electrum_ganja_plugins.trezor',
+        'electrum_ganja_plugins.digitalbitbox',
+        'electrum_ganja_plugins.trustedcoin',
+        'electrum_ganja_plugins.virtualkeyboard',
     ],
     package_dir={
-        'electrum': 'lib',
-        'electrum_gui': 'gui',
-        'electrum_plugins': 'plugins',
+        'electrum_ganja': 'lib',
+        'electrum_ganja_gui': 'gui',
+        'electrum_ganja_plugins': 'plugins',
     },
     package_data={
-        'electrum': [
+        'electrum_ganja': [
             'servers.json',
             'servers_testnet.json',
             'servers_regtest.json',
@@ -85,15 +85,17 @@ setup(
             'checkpoints_testnet.json',
             'www/index.html',
             'wordlist/*.txt',
-            'locale/*/LC_MESSAGES/electrum.mo',
+            'locale/*/LC_MESSAGES/electrum_ganja.mo',
         ]
     },
-    scripts=['electrum'],
+    scripts=['electrum-ganja'],
     data_files=data_files,
-    description="Lightweight Bitcoin Wallet",
-    author="Thomas Voegtlin",
-    author_email="thomasv@electrum.org",
+    description="Lightweight Ganjacoin Wallet",
+    #author="Thomas Voegtlin",
+    author="GanjaProject"
+    #author_email="thomasv@electrum.org",
     license="MIT Licence",
-    url="https://electrum.org",
-    long_description="""Lightweight Bitcoin Wallet"""
+    #url="https://electrum.org",
+    url="https://ganjacoinpro.com"
+    long_description="""Lightweight Ganjacoin Wallet"""
 )

@@ -598,12 +598,12 @@ def parse_URI(uri, on_pr=None):
 
     if ':' not in uri:
         if not ganja.is_address(uri):
-            raise Exception("Not a ganjacoin address")
+            raise Exception("Not a Ganjacoin address")
         return {'address': uri}
 
     u = urllib.parse.urlparse(uri)
     if u.scheme != 'ganjacoin':
-        raise Exception("Not a ganjacoin URI")
+        raise Exception("Not a Ganjacoin URI")
     address = u.path
 
     # python for android fails to parse query
@@ -620,7 +620,7 @@ def parse_URI(uri, on_pr=None):
     out = {k: v[0] for k, v in pq.items()}
     if address:
         if not ganja.is_address(address):
-            raise Exception("Invalid ganjacoin address:" + address)
+            raise Exception("Invalid Ganjacoin address:" + address)
         out['address'] = address
     if 'amount' in out:
         am = out['amount']

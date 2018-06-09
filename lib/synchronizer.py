@@ -76,7 +76,11 @@ class Synchronizer(ThreadJob):
     def subscribe_to_addresses(self, addresses):
         if addresses:
             self.requested_addrs |= addresses
-            self.network.subscribe_to_addresses(addresses, self.on_address_status)
+        if addresses:
+            self.requested_addrs |= addresses
+            msgs = map(lambda addr: ('blockchain.address.subscribe', [addr]), addresses)
+#           self.network.subscribe_to_addresses(addresses, self.on_address_status)
+            self.network.send(msgs, self.on_address_status)
 
     def get_status(self, h):
         if not h:
@@ -97,7 +101,10 @@ class Synchronizer(ThreadJob):
         if self.get_status(history) != result:
             if self.requested_histories.get(addr) is None:
                 self.requested_histories[addr] = result
-                self.network.request_address_history(addr, self.on_address_history)
+#                self.network.request_address_history(addr, self.on_address_history)
+                self.network.send([('blockchain.address.get_history', [addr])],
+                                  self.on_address_history)
+
         # remove addr from list only after it is added to requested_histories
         if addr in self.requested_addrs:  # Notifications won't be in
             self.requested_addrs.remove(addr)

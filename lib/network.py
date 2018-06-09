@@ -29,12 +29,13 @@ import errno
 import random
 import re
 import select
-from collections import defaultdict
+from collections import defaultdict, deque
 import threading
+
 import socket
+import socks
 import json
 
-import socks
 from . import util
 from . import ganja
 from .ganja import *
@@ -44,6 +45,20 @@ from . import blockchain
 from .version import ELECTRUM_GANJA_VERSION, PROTOCOL_VERSION
 from .i18n import _
 
+DEFAULT_PORTS = {'t':'50001', 's':'50002'}
+
+DEFAULT_SERVERS = {
+    '167.99.201.109': DEFAULT_PORTS,
+    '167.99.205.163': DEFAULT_PORTS,
+}
+# Add in if testnet becomes available #
+#def set_testnet():
+#    global DEFAULT_PORTS, DEFAULT_SERVERS
+#    DEFAULT_PORTS = {'t':'51001', 's':'51002'}
+#    DEFAULT_SERVERS = {
+#        '14.3.140.101': DEFAULT_PORTS,
+#        'testnet.not.fyi': DEFAULT_PORTS
+#    }
 
 NODES_RETRY_INTERVAL = 60
 SERVER_RETRY_INTERVAL = 10
@@ -175,6 +190,8 @@ class Network(util.DaemonThread):
         self.blockchain_index = config.get('blockchain_index', 0)
         if self.blockchain_index not in self.blockchains.keys():
             self.blockchain_index = 0
+        # A deque of interface headers requests, processed left-to-right
+        self.bc_requests = deque()
         # Server for addresses and transactions
         self.default_server = self.config.get('server', None)
         # Sanitize default server
@@ -195,7 +212,10 @@ class Network(util.DaemonThread):
 
         self.banner = ''
         self.donation_address = ''
-        self.relay_fee = 1000
+        self.relay_fee = None
+        self.heights = {}
+        self.merkle_roots = {}
+        self.utxo_roots = {}
         # callbacks passed with subscriptions
         self.subscriptions = defaultdict(list)
         self.sub_cache = {}
@@ -537,7 +557,7 @@ class Network(util.DaemonThread):
             interface.server_version = result
         elif method == 'blockchain.headers.subscribe':
             if error is None:
-                self.on_notify_header(interface, result)
+                self.on_notify_header(interface, response, result)
         elif method == 'server.peers.subscribe':
             if error is None:
                 self.irc_servers = parse_servers(result)
@@ -563,7 +583,8 @@ class Network(util.DaemonThread):
                 self.notify('fee')
         elif method == 'blockchain.relayfee':
             if error is None:
-                self.relay_fee = int(result * COIN) if result is not None else None
+#                self.relay_fee = int(result * COIN) if result is not None else None
+                self.relay_fee = 5000
                 self.print_error("relayfee", self.relay_fee)
         elif method == 'blockchain.block.get_chunk':
             self.on_get_chunk(interface, response)
@@ -800,11 +821,15 @@ class Network(util.DaemonThread):
             blockchain.catch_up = None
         self.notify('updated')
 
-    def request_header(self, interface, height):
-        #interface.print_error("requesting header %d" % height)
+    def request_header(self, interface, data, height, response):
+        interface.print_error("requesting header %d" % height)
         self.queue_request('blockchain.block.get_header', [height], interface)
         interface.request = height
         interface.req_time = time.time()
+        data['header_height'] = height
+        data['req_time'] = time.time()
+        if not 'chain' in data:
+            data['chain'] = []
 
     def on_get_header(self, interface, response):
         '''Handle receiving a single block header'''
@@ -984,7 +1009,7 @@ class Network(util.DaemonThread):
         self.stop_network()
         self.on_stop()
 
-    def on_notify_header(self, interface, header):
+    def on_notify_header(self, interface, header, response):
         height = header.get('block_height')
         if not height:
             return
@@ -1023,7 +1048,7 @@ class Network(util.DaemonThread):
                 interface.mode = 'catch_up'
                 interface.blockchain = chain
                 self.print_error("switching to catchup mode", tip,  self.blockchains)
-                self.request_header(interface, 0)
+                self.request_header(response, height, interface, 0)
             else:
                 self.print_error("chain already catching up with", chain.catch_up.server)
 

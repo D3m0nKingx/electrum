@@ -99,7 +99,7 @@ def append_utxos_to_inputs(inputs, network, pubkey, txin_type, imax):
         script = ganja.public_key_to_p2pk_script(pubkey)
         sh = ganja.script_to_scripthash(script)
         address = '(pubkey)'
-    u = network.synchronous_get(('blockchain.scripthash.listunspent', [sh]))
+    u = network.synchronous_get(('blockchain.address.listunspent', [sh]))
     for item in u:
         if len(inputs) >= imax:
             break

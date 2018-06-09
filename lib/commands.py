@@ -183,7 +183,7 @@ class Commands:
         walletless server query, results are not checked by SPV.
         """
         sh = ganja.address_to_scripthash(address)
-        return self.network.synchronous_get(('blockchain.scripthash.get_history', [sh]))
+        return self.network.synchronous_get(('blockchain.address.get_history', [sh]))
 
     @command('w')
     def listunspent(self):
@@ -201,7 +201,7 @@ class Commands:
         is a walletless server query, results are not checked by SPV.
         """
         sh = ganja.address_to_scripthash(address)
-        return self.network.synchronous_get(('blockchain.scripthash.listunspent', [sh]))
+        return self.network.synchronous_get(('blockchain.address.listunspent', [sh]))
 
     @command('')
     def serialize(self, jsontx):
@@ -324,9 +324,18 @@ class Commands:
         server query, results are not checked by SPV.
         """
         sh = ganja.address_to_scripthash(address)
-        out = self.network.synchronous_get(('blockchain.scripthash.get_balance', [sh]))
+        out = self.network.synchronous_get(('blockchain.address.get_balance', [sh]))
         out["confirmed"] =  str(Decimal(out["confirmed"])/COIN)
         out["unconfirmed"] =  str(Decimal(out["unconfirmed"])/COIN)
+        return out
+
+    @command('n')
+    def getproof(self, address):
+        """Get Merkle branch of an address in the UTXO set"""
+        p = self.network.synchronous_get(('blockchain.address.get_proof', [address]))
+        out = []
+        for i,s in p:
+            out.append(i)
         return out
 
     @command('n')
@@ -650,7 +659,8 @@ class Commands:
                 util.print_error('Got Response for %s' % address)
             except BaseException as e:
                 util.print_error(str(e))
-        self.network.subscribe_to_addresses([address], callback)
+        #self.network.subscribe_to_addresses([address], callback)
+        self.network.send([('blockchain.address.subscribe', [address])], callback)
         return True
 
     @command('wn')

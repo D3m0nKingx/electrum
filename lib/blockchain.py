@@ -305,43 +305,88 @@ class Blockchain(util.PrintError):
         else:
             return hash_header(self.read_header(height))
 
-    def get_target(self, index):
+#    def get_target(self, index):
         # compute target from chunk x, used in chunk x+1
-        if constants.net.TESTNET:
-            return 0
-        if index == -1:
-            return MAX_TARGET
-        if index < len(self.checkpoints):
-            h, t = self.checkpoints[index]
-            return t
-        # new target
-        first = self.read_header(index * 2016)
-        last = self.read_header(index * 2016 + 2015)
-        if not first or not last:
-            raise MissingHeader()
-        bits = last.get('bits')
-        target = self.bits_to_target(bits)
-        nActualTimespan = last.get('timestamp') - first.get('timestamp')
+#        if constants.net.TESTNET:
+#            return 0
+#        if index == -1:
+#            return MAX_TARGET
+#        if index < len(self.checkpoints):
+#            h, t = self.checkpoints[index]
+#            return t
+#        # new target
+#        first = self.read_header(index * 2016)
+#        last = self.read_header(index * 2016 + 2015)
+#        if not first or not last:
+#            raise MissingHeader()
+#        bits = last.get('bits')
+#        target = self.bits_to_target(bits)
+#        nActualTimespan = last.get('timestamp') - first.get('timestamp')
         #nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
         #nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
         #new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
-        nTargetTimespan = 10 * 60 # 10 minutes
-        bnTargetLimit = 10000
-        nTargetSpacing = 30
-        nInterval = nTargetTimeSpan / nTargetSpacing
-        bnNew = last.get('bits')
-        bnNew *= ((nInterval -1) * nTargetSpacing + nActualTimespan + nActualTimespan)
-        bnNew = bnNew / ((nInterval + 1) * nTargetSpacking)
+#        nTargetTimespan = 10 * 60 # 10 minutes
+#        bnTargetLimit = 10000
+#        nTargetSpacing = 30
+#        nInterval = nTargetTimeSpan / nTargetSpacing
+#        bnNew = last.get('bits')
+#        bnNew *= ((nInterval -1) * nTargetSpacing + nActualTimespan + nActualTimespan)
+#        bnNew = bnNew / ((nInterval + 1) * nTargetSpacking)
 
-        if bnNew <= 0:
-            bnNew = bnTargetLimit
-        if bnNew > bnTargetLimit:
-            bnNew = bnTargetLimit
+#        if bnNew <= 0:
+#            bnNew = bnTargetLimit
+#        if bnNew > bnTargetLimit:
+#            bnNew = bnTargetLimit
 
-        new_target = bnNew
+#        new_target = bnNew
+#
+#       self.print_msg("New target: ", new_target)
+#        return new_target
 
-        self.print_msg("New target: ", new_target)
-        return new_target
+    def get_target(self, index, chain=None):
+        if chain is None:
+            chain = []  # Do not use mutables as default values!
+
+        max_target = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
+        if index == 0: return 0x1d00ffff, max_target
+
+        first = self.read_header((index-1)*2016)
+        last = self.read_header(index*2016-1)
+        if last is None:
+            for h in chain:
+                if h.get('block_height') == index*2016-1:
+                    last = h
+
+        nActualTimespan = last.get('timestamp') - first.get('timestamp')
+        nTargetTimespan = 10*60
+        nActualTimespan = max(nActualTimespan, nTargetTimespan/4)
+        nActualTimespan = min(nActualTimespan, nTargetTimespan*4)
+
+        bits = last.get('bits')
+        # convert to bignum
+        MM = 256*256*256
+        a = bits%MM
+        if a < 0x8000:
+            a *= 256
+        target = (a) * pow(2, 8 * (bits/MM - 3))
+
+        # new target
+        new_target = min( max_target, (target * nActualTimespan)/nTargetTimespan )
+
+        # convert it to bits
+        c = ("%064X"%new_target)[2:]
+        i = 31
+        while c[0:2]=="00":
+            c = c[2:]
+            i -= 1
+
+        c = int('0x'+c[0:6],16)
+        if c >= 0x800000:
+            c /= 256
+            i += 1
+
+        new_bits = c + MM * i
+        return new_bits, new_target
 
     def bits_to_target(self, bits):
         bitsN = (bits >> 24) & 0xff

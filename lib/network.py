@@ -320,7 +320,7 @@ class Network(util.DaemonThread):
         self.request_fee_estimates()
         self.queue_request('blockchain.relayfee', [])
         for h in list(self.subscribed_addresses):
-            self.queue_request('blockchain.scripthash.subscribe', [h])
+            self.queue_request('blockchain.address.subscribe', [h])
 
     def request_fee_estimates(self):
         from .simple_config import FEE_ETA_TARGETS
@@ -600,7 +600,7 @@ class Network(util.DaemonThread):
                 response['params'] = params
                 # Only once we've received a response to an addr subscription
                 # add it to the list; avoids double-sends on reconnection
-                if method == 'blockchain.scripthash.subscribe':
+                if method == 'blockchain.address.subscribe':
                     self.subscribed_addresses.add(params[0])
             else:
                 if not response:  # Closed remotely / misbehaving
@@ -613,7 +613,7 @@ class Network(util.DaemonThread):
                 if method == 'blockchain.headers.subscribe':
                     response['result'] = params[0]
                     response['params'] = []
-                elif method == 'blockchain.scripthash.subscribe':
+                elif method == 'blockchain.address.subscribe':
                     response['params'] = [params[0]]  # addr
                     response['result'] = params[1]
                 callbacks = self.subscriptions.get(k, [])
@@ -636,13 +636,13 @@ class Network(util.DaemonThread):
     def subscribe_to_addresses(self, addresses, callback):
         hash2address = {ganja.address_to_scripthash(address): address for address in addresses}
         self.h2addr.update(hash2address)
-        msgs = [('blockchain.scripthash.subscribe', [x]) for x in hash2address.keys()]
+        msgs = [('blockchain.address.subscribe', [x]) for x in hash2address.keys()]
         self.send(msgs, self.map_scripthash_to_address(callback))
 
     def request_address_history(self, address, callback):
         h = ganja.address_to_scripthash(address)
         self.h2addr.update({h: address})
-        self.send([('blockchain.scripthash.get_history', [h])], self.map_scripthash_to_address(callback))
+        self.send([('blockchain.address.get_history', [h])], self.map_scripthash_to_address(callback))
 
     def send(self, messages, callback):
         '''Messages is a list of (method, params) tuples'''
